@@ -16,7 +16,7 @@ public class ModNetworking {
                 SyncCoreChannelsPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     if (Minecraft.getInstance().screen instanceof ControlPanelScreen screen) {
-                        screen.updateChannels(payload.channels());
+                        screen.updateChannels(payload.channels(), payload.yOffset());
                     }
                 })
         );

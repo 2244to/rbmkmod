@@ -3,6 +3,7 @@ package com.rbmkmod.rbmkmod;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu> {
     private List<CoreChannelData> syncedChannels = new ArrayList<>();
+    private int currentYOffset = 0;
 
     public ControlPanelScreen(ControlPanelMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -18,8 +20,9 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         this.imageHeight = 240;
     }
 
-    public void updateChannels(List<CoreChannelData> channels) {
+    public void updateChannels(List<CoreChannelData> channels, int yOffset) {
         this.syncedChannels = channels;
+        this.currentYOffset = yOffset;
     }
 
     @Override
@@ -36,6 +39,12 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
         this.addRenderableWidget(Button.builder(Component.literal("AZ-5 (Bór)"), b -> sendButton(2))
                 .bounds(x + 10, y + 212, 70, 18).build());
+
+        this.addRenderableWidget(Button.builder(Component.literal("Y +1"), b -> sendButton(3))
+                .bounds(x + 10, y + 105, 33, 18).build());
+
+        this.addRenderableWidget(Button.builder(Component.literal("Y -1"), b -> sendButton(4))
+                .bounds(x + 47, y + 105, 33, 18).build());
     }
 
     private void sendButton(int id) {
@@ -68,8 +77,8 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
         guiGraphics.drawString(this.font, this.title, x + 10, y + 10, 0x00FF00, false);
 
-        ControlPanelBlockEntity panel = menu.getBlockEntity();
-        if (panel == null) return;
+        String yText = "Różnica Y: " + (currentYOffset >= 0 ? "+" : "") + currentYOffset;
+        guiGraphics.drawString(this.font, yText, x + 10, y + 90, 0xFFFF55, false);
 
         int centerX = x + 160;
         int centerY = y + 115;
@@ -77,9 +86,11 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
         CoreChannelData hoveredChannel = null;
 
+        BlockPos centerPos = menu.getBlockEntity() != null ? menu.getBlockEntity().getBlockPos() : null;
+
         for (CoreChannelData ch : syncedChannels) {
-            int relX = ch.pos().getX() - panel.getBlockPos().getX();
-            int relZ = ch.pos().getZ() - panel.getBlockPos().getZ();
+            int relX = centerPos != null ? ch.pos().getX() - centerPos.getX() : 0;
+            int relZ = centerPos != null ? ch.pos().getZ() - centerPos.getZ() : 0;
 
             int px = centerX + (relX * cellSize);
             int py = centerY + (relZ * cellSize);
@@ -95,7 +106,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
         if (hoveredChannel != null) {
             List<Component> tooltip = new ArrayList<>();
-            tooltip.add(Component.literal("§eKanał [" + hoveredChannel.pos().getX() + ", " + hoveredChannel.pos().getY() + ", " + hoveredChannel.pos().getZ() + "]"));
+            tooltip.add(Component.literal("§eKanał [" + hoveredChannel.pos().getX() + ", Y:" + hoveredChannel.pos().getY() + ", " + hoveredChannel.pos().getZ() + "]"));
 
             switch (hoveredChannel.type()) {
                 case FUEL -> {

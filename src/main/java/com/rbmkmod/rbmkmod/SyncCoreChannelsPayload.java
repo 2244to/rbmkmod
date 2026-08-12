@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public record SyncCoreChannelsPayload(List<CoreChannelData> channels) implements CustomPacketPayload {
+public record SyncCoreChannelsPayload(List<CoreChannelData> channels, int yOffset) implements CustomPacketPayload {
     public static final Type<SyncCoreChannelsPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(RbmkMod.MODID, "sync_core_channels"));
 
@@ -16,6 +16,8 @@ public record SyncCoreChannelsPayload(List<CoreChannelData> channels) implements
             StreamCodec.composite(
                     CoreChannelData.STREAM_CODEC.apply(ByteBufCodecs.list()),
                     SyncCoreChannelsPayload::channels,
+                    ByteBufCodecs.INT,
+                    SyncCoreChannelsPayload::yOffset,
                     SyncCoreChannelsPayload::new
             );
 

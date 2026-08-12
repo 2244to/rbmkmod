@@ -34,8 +34,9 @@ public class ControlPanelMenu extends AbstractContainerMenu {
         super.broadcastChanges();
         if (blockEntity != null && !blockEntity.getLevel().isClientSide()) {
             if (this.player instanceof ServerPlayer serverPlayer) {
-                List<CoreChannelData> channels = blockEntity.scanCoreChannels();
-                PacketDistributor.sendToPlayer(serverPlayer, new SyncCoreChannelsPayload(channels));
+                int yOffset = blockEntity.getSelectedYOffset();
+                List<CoreChannelData> channels = blockEntity.scanCoreChannelsForY(yOffset);
+                PacketDistributor.sendToPlayer(serverPlayer, new SyncCoreChannelsPayload(channels, yOffset));
             }
         }
     }
@@ -48,6 +49,8 @@ public class ControlPanelMenu extends AbstractContainerMenu {
             case 0 -> blockEntity.setAllRodsMode(ControlRodMode.RETRACTED);
             case 1 -> blockEntity.setAllRodsMode(ControlRodMode.GRAPHITE);
             case 2 -> blockEntity.setAllRodsMode(ControlRodMode.BORON);
+            case 3 -> blockEntity.setSelectedYOffset(blockEntity.getSelectedYOffset() + 1);
+            case 4 -> blockEntity.setSelectedYOffset(blockEntity.getSelectedYOffset() - 1);
         }
         return true;
     }
