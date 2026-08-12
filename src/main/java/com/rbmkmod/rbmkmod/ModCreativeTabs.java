@@ -29,6 +29,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.URANIUM_BLOCK_ITEM.get());
                         output.accept(ModItems.ENRICHED_URANIUM_BLOCK_ITEM.get());
                         output.accept(ModItems.NEUTRON_GUN.get());
+                        output.accept(ModItems.CONTROL_ROD_BLOCK_ITEM.get());
                     }).build());
 
     public static void register(IEventBus eventBus) {

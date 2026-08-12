@@ -15,6 +15,11 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(EnrichedUraniumBlockEntity::new,
                             ModBlocks.ENRICHED_URANIUM_BLOCK.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ControlRodBlockEntity>> CONTROL_ROD =
+            BLOCK_ENTITIES.register("control_rod", () ->
+                    BlockEntityType.Builder.of(ControlRodBlockEntity::new,
+                            ModBlocks.CONTROL_ROD_BLOCK.get()).build(null));
+
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);
     }

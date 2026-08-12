@@ -45,6 +45,9 @@ public class ModItems {
     public static final DeferredItem<Item> BORON_BLOCK_ITEM = ITEMS.registerItem("boron_block",
             properties -> new BlockItem(ModBlocks.BORON_BLOCK.get(), properties));
 
+    public static final DeferredItem<Item> CONTROL_ROD_BLOCK_ITEM = ITEMS.registerItem("control_rod",
+            properties -> new BlockItem(ModBlocks.CONTROL_ROD_BLOCK.get(), properties));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

@@ -119,6 +119,32 @@ public class NuclearParticle {
                             ).scale(0.4);
                         }
                     }
+                } else if (hitBlock.is(ModBlocks.CONTROL_ROD_BLOCK.get())
+                        && level.getBlockEntity(blockPos) instanceof ControlRodBlockEntity controlRod) {
+                    if (!blockPos.equals(lastInteraction)) {
+                        switch (controlRod.getMode()) {
+                            case BORON -> {
+                                return false; // Bór pochłania neutron (niszczy cząstkę)
+                            }
+                            case GRAPHITE -> {
+                                // Grafit spowalnia i rozprasza neutron
+                                neutronEnergyEv = Math.max(1.0, neutronEnergyEv * 1e-8);
+                                double speed = velocity.length();
+                                if (speed > 1.0e-6) {
+                                    Vec3 scatter = new Vec3(
+                                            level.random.nextDouble() - 0.5,
+                                            level.random.nextDouble() - 0.5,
+                                            level.random.nextDouble() - 0.5
+                                    ).scale(0.4);
+                                    velocity = velocity.normalize().add(scatter).normalize().scale(speed);
+                                }
+                                lastInteraction = blockPos;
+                            }
+                            case RETRACTED -> {
+                                // Wysunięty – neutron przechodzi swobodnie
+                            }
+                        }
+                    }
                 }
             }
         }
