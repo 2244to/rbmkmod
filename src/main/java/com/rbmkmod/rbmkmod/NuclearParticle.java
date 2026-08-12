@@ -54,10 +54,15 @@ public class NuclearParticle {
             if (!blockPos.equals(originPos)) {
                 BlockState hitBlock = level.getBlockState(blockPos);
 
-                // Grafit = moderator: spowalnia i rozprasza neutron
-                if (hitBlock.is(ModBlocks.PURIFIED_GRAPHITE_BLOCK.get())) {
+                int graphitePercent = getNearbyGraphitePercent(level, blockPos);
+                double graphiteEffect = graphitePercent / 100.0;
+
+                // 1. Grafit stacjonarny = moderator: spowalnia i rozprasza neutron
+                if (hitBlock.is(ModBlocks.PURIFIED_GRAPHITE_BLOCK.get()) || hitBlock.is(ModBlocks.GRAPHITE_BLOCK.get())) {
                     if (!blockPos.equals(lastInteraction)) {
-                        neutronEnergyEv = Math.max(1.0, neutronEnergyEv * 1e-8);
+                        if (level.random.nextDouble() < graphiteEffect) {
+                            neutronEnergyEv = Math.max(1.0, neutronEnergyEv * 1e-8);
+                        }
                         double speed = velocity.length();
                         if (speed > 1.0e-6) {
                             Vec3 scatter = new Vec3(
@@ -70,11 +75,9 @@ public class NuclearParticle {
                         lastInteraction = blockPos;
                     }
 
-                    // Beryl = reflektor: odbija neutron o 180 stopni
-// Beryl = reflektor: odbicie zwierciadlane (kąt padania = kąt odbicia)
+                    // 2. Beryl = reflektor: odbicie zwierciadlane
                 } else if (hitBlock.is(ModBlocks.BERYLLIUM_BLOCK.get())) {
                     if (!blockPos.equals(lastInteraction)) {
-                        // Obliczamy poprzednią pozycję, żeby ustalić, z której ściany wleciał neutron
                         Vec3 prevPos = position.subtract(velocity);
                         BlockPos prevBlockPos = BlockPos.containing(prevPos.x, prevPos.y, prevPos.z);
 
@@ -82,12 +85,10 @@ public class NuclearParticle {
                         int dy = blockPos.getY() - prevBlockPos.getY();
                         int dz = blockPos.getZ() - prevBlockPos.getZ();
 
-                        // Odwracamy zwrot tylko tej osi, na której nastąpiło zderzenie ze ścianą
                         double vx = (dx != 0) ? -velocity.x : velocity.x;
                         double vy = (dy != 0) ? -velocity.y : velocity.y;
                         double vz = (dz != 0) ? -velocity.z : velocity.z;
 
-                        // Jeśli zderzenie nastąpiło wewnątrz bloku (brak zmiany pozycji), zawracamy wektor
                         if (dx == 0 && dy == 0 && dz == 0) {
                             velocity = velocity.scale(-1.0);
                         } else {
@@ -97,38 +98,40 @@ public class NuclearParticle {
                         lastInteraction = blockPos;
                     }
 
-                    // Bor = absorber: natychmiast pochłania neutron (niszczy cząstkę)
+                    // 3. Uran = blok paliwowy: rozszczepienie jąder
                 } else if (hitBlock.is(ModBlocks.ENRICHED_URANIUM_BLOCK.get())
                         && level instanceof ServerLevel serverLevel
                         && level.getBlockEntity(blockPos) instanceof EnrichedUraniumBlockEntity reactor) {
 
                     if (!blockPos.equals(originPos)) {
-                        // Sprawdzamy czy neutron jest ztermalizowany (powolny po przejściu przez grafit)
                         boolean isThermal = neutronEnergyEv < 1000.0;
 
-                        // Powolny neutron wywołuje rozszczepienie ZAWSZE (100% szans).
-                        // Szybki neutron (prosto z uranu bez grafitu) ma tylko 5% szans na reakcję.
                         if (isThermal || level.random.nextFloat() < 0.05f) {
                             reactor.receiveNeutron(neutronEnergyEv, serverLevel);
-                            return false; // Neutron ginie w rozszczepieniu
+                            return false;
                         } else {
                             Vec3 scatter = new Vec3(
                                     level.random.nextDouble() - 0.5,
                                     level.random.nextDouble() - 0.5,
                                     level.random.nextDouble() - 0.5
                             ).scale(0.4);
+                            velocity = velocity.normalize().add(scatter).normalize().scale(velocity.length());
                         }
                     }
+
+                    // 4. Pręt sterujący = pręt z wyborem trybu
                 } else if (hitBlock.is(ModBlocks.CONTROL_ROD_BLOCK.get())
                         && level.getBlockEntity(blockPos) instanceof ControlRodBlockEntity controlRod) {
+
                     if (!blockPos.equals(lastInteraction)) {
                         switch (controlRod.getMode()) {
                             case BORON -> {
-                                return false; // Bór pochłania neutron (niszczy cząstkę)
+                                return false;
                             }
                             case GRAPHITE -> {
-                                // Grafit spowalnia i rozprasza neutron
-                                neutronEnergyEv = Math.max(1.0, neutronEnergyEv * 1e-8);
+                                if (level.random.nextDouble() < graphiteEffect) {
+                                    neutronEnergyEv = Math.max(1.0, neutronEnergyEv * 1e-8);
+                                }
                                 double speed = velocity.length();
                                 if (speed > 1.0e-6) {
                                     Vec3 scatter = new Vec3(
@@ -141,7 +144,6 @@ public class NuclearParticle {
                                 lastInteraction = blockPos;
                             }
                             case RETRACTED -> {
-                                // Wysunięty – neutron przechodzi swobodnie
                             }
                         }
                     }
@@ -149,6 +151,15 @@ public class NuclearParticle {
             }
         }
         return remainingTicks > 0;
+    }
+
+    private int getNearbyGraphitePercent(Level level, BlockPos pos) {
+        for (ControlPanelBlockEntity panel : ControlPanelBlockEntity.PANELS) {
+            if (panel.getLevel() == level && panel.getBlockPos().closerThan(pos, 50)) {
+                return panel.getGraphitePercent();
+            }
+        }
+        return 100;
     }
 
     private void checkPlayerCollision(Level level) {

@@ -35,8 +35,10 @@ public class ControlPanelMenu extends AbstractContainerMenu {
         if (blockEntity != null && !blockEntity.getLevel().isClientSide()) {
             if (this.player instanceof ServerPlayer serverPlayer) {
                 int yOffset = blockEntity.getSelectedYOffset();
+                int graphite = blockEntity.getGraphitePercent();
+                float zoom = blockEntity.getZoomFactor();
                 List<CoreChannelData> channels = blockEntity.scanCoreChannelsForY(yOffset);
-                PacketDistributor.sendToPlayer(serverPlayer, new SyncCoreChannelsPayload(channels, yOffset));
+                PacketDistributor.sendToPlayer(serverPlayer, new SyncCoreChannelsPayload(channels, yOffset, graphite, zoom));
             }
         }
     }

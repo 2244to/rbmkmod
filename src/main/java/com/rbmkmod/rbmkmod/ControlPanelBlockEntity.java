@@ -14,12 +14,31 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider {
+    public static final List<ControlPanelBlockEntity> PANELS = new CopyOnWriteArrayList<>();
+
     private int selectedYOffset = 0;
+    private int graphitePercent = 100;
+    private float zoomFactor = 1.0f;
 
     public ControlPanelBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.CONTROL_PANEL.get(), pos, blockState);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level != null && !level.isClientSide) {
+            PANELS.add(this);
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        PANELS.remove(this);
     }
 
     public int getSelectedYOffset() {
@@ -28,6 +47,24 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
 
     public void setSelectedYOffset(int offset) {
         this.selectedYOffset = Math.max(-50, Math.min(50, offset));
+        setChanged();
+    }
+
+    public int getGraphitePercent() {
+        return graphitePercent;
+    }
+
+    public void setGraphitePercent(int percent) {
+        this.graphitePercent = Math.max(0, Math.min(100, percent));
+        setChanged();
+    }
+
+    public float getZoomFactor() {
+        return zoomFactor;
+    }
+
+    public void setZoomFactor(float zoom) {
+        this.zoomFactor = Math.max(1.0f, Math.min(3.0f, zoom));
         setChanged();
     }
 
@@ -84,6 +121,8 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putInt("SelectedYOffset", selectedYOffset);
+        tag.putInt("GraphitePercent", graphitePercent);
+        tag.putFloat("ZoomFactor", zoomFactor);
     }
 
     @Override
@@ -91,6 +130,12 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         super.loadAdditional(tag, registries);
         if (tag.contains("SelectedYOffset")) {
             this.selectedYOffset = tag.getInt("SelectedYOffset");
+        }
+        if (tag.contains("GraphitePercent")) {
+            this.graphitePercent = tag.getInt("GraphitePercent");
+        }
+        if (tag.contains("ZoomFactor")) {
+            this.zoomFactor = tag.getFloat("ZoomFactor");
         }
     }
 
