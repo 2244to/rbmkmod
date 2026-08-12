@@ -19,9 +19,9 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         super(ModBlockEntities.CONTROL_PANEL.get(), pos, blockState);
     }
 
-    public List<ControlRodBlockEntity> findNearbyRods() {
-        List<ControlRodBlockEntity> rods = new ArrayList<>();
-        if (level == null) return rods;
+    public List<CoreChannelData> scanCoreChannels() {
+        List<CoreChannelData> channels = new ArrayList<>();
+        if (level == null) return channels;
 
         int radius = 50;
         int radiusSq = radius * radius;
@@ -31,28 +31,45 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                 worldPosition.offset(radius, radius, radius)
         ).forEach(p -> {
             if (worldPosition.distSqr(p) <= radiusSq) {
-                if (level.getBlockEntity(p) instanceof ControlRodBlockEntity rod) {
-                    rods.add(rod);
+                BlockEntity be = level.getBlockEntity(p);
+                BlockState state = level.getBlockState(p);
+
+                if (be instanceof EnrichedUraniumBlockEntity u) {
+                    double tempC = u.getTemperature() - 273.15;
+                    int water = u.getWaterTank().getFluidAmount();
+                    long steam = u.getSteamTank().getStack().getAmount();
+                    channels.add(new CoreChannelData(p.immutable(), CoreChannelData.Type.FUEL, tempC, water, steam, null));
+                } else if (be instanceof ControlRodBlockEntity rod) {
+                    channels.add(new CoreChannelData(p.immutable(), CoreChannelData.Type.CONTROL_ROD, 20.0, 0, 0, rod.getMode()));
+                } else if (state.is(ModBlocks.PURIFIED_GRAPHITE_BLOCK.get()) || state.is(ModBlocks.GRAPHITE_BLOCK.get())) {
+                    channels.add(new CoreChannelData(p.immutable(), CoreChannelData.Type.GRAPHITE, 20.0, 0, 0, null));
+                } else if (state.is(ModBlocks.BERYLLIUM_BLOCK.get())) {
+                    channels.add(new CoreChannelData(p.immutable(), CoreChannelData.Type.BERYLLIUM, 20.0, 0, 0, null));
                 }
             }
         });
 
-        return rods;
+        return channels;
     }
 
     public void setAllRodsMode(ControlRodMode mode) {
-        for (ControlRodBlockEntity rod : findNearbyRods()) {
-            rod.setMode(mode);
-        }
-    }
+        if (level == null) return;
+        int radius = 50;
+        int radiusSq = radius * radius;
 
-    public int getFoundRodsCount() {
-        return findNearbyRods().size();
+        BlockPos.betweenClosedStream(
+                worldPosition.offset(-radius, -radius, -radius),
+                worldPosition.offset(radius, radius, radius)
+        ).forEach(p -> {
+            if (worldPosition.distSqr(p) <= radiusSq && level.getBlockEntity(p) instanceof ControlRodBlockEntity rod) {
+                rod.setMode(mode);
+            }
+        });
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("Panel Sterowania Reaktorem");
+        return Component.literal("System SKALA - Mnemokomputer RBMK");
     }
 
     @Override

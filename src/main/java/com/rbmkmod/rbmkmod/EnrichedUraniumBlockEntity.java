@@ -245,6 +245,16 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
         }
     }
 
+    private double lastSyncedTemp = ROOM_TEMPERATURE;
+
+    // Dodaj to wywołanie na końcu metody serverTick:
+    private void checkTemperatureSync(ServerLevel level) {
+        if (Math.abs(this.temperature - this.lastSyncedTemp) >= 0.5) {
+            this.lastSyncedTemp = this.temperature;
+            level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
@@ -252,6 +262,8 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
+        CompoundTag tag = super.getUpdateTag(registries);
+        saveAdditional(tag, registries);
+        return tag;
     }
 }
