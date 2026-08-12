@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "rbmkmod:enriched_uranium_block"
+    }
+  ],
+  "result": {
+    "id": "rbmkmod:enriched_uranium",
+    "count": 9
+  }
+}

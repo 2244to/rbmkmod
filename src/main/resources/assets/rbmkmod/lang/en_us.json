@@ -1,0 +1,17 @@
+{
+  "block.rbmkmod.graphite_block": "Graphite Block",
+  "item.rbmkmod.graphite_block": "Graphite Block",
+  "block.rbmkmod.purified_graphite_block": "Purified Graphite Block",
+  "item.rbmkmod.purified_graphite_block": "Purified Graphite Block",
+  "block.rbmkmod.uranium_ore": "Uranium Ore",
+  "item.rbmkmod.uranium_ore": "Uranium Ore",
+  "item.rbmkmod.uranium_ingot": "Uranium Ingot",
+  "item.rbmkmod.enriched_uranium": "Enriched Uranium",
+  "block.rbmkmod.uranium_block": "Uranium Block",
+  "item.rbmkmod.uranium_block": "Uranium Block",
+  "block.rbmkmod.enriched_uranium_block": "Enriched Uranium Block",
+  "item.rbmkmod.enriched_uranium_block": "Enriched Uranium Block",
+  "item.rbmkmod.graphite": "Graphite",
+  "item.rbmkmod.neutron_gun": "Neutron Gun",
+  "creativetab.rbmkmod.rbmk_tab": "RBMK Reactor Mod"
+}

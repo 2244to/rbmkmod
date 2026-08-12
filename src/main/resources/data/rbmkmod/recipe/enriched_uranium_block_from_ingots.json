@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "UUU",
+    "UUU",
+    "UUU"
+  ],
+  "key": {
+    "U": {
+      "item": "rbmkmod:enriched_uranium"
+    }
+  },
+  "result": {
+    "id": "rbmkmod:enriched_uranium_block",
+    "count": 1
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "mekanism:enriching",
+  "input": {
+    "count": 1,
+    "item": "rbmkmod:uranium_ingot"
+  },
+  "output": {
+    "count": 1,
+    "id": "rbmkmod:enriched_uranium"
+  }
+}

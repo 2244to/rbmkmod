@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rbmkmod:block/purified_graphite_block"
+    }
+  }
+}

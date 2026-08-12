@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "rbmkmod:block/purified_graphite_block"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "rbmkmod:graphite_block"
+    }
+  ],
+  "result": {
+    "id": "rbmkmod:graphite",
+    "count": 9
+  }
+}

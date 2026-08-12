@@ -1,0 +1,16 @@
+{
+  "type": "mekanism:purifying",
+  "chemical_input": {
+    "amount": 200,
+    "chemical": "mekanism:oxygen"
+  },
+  "item_input": {
+    "count": 1,
+    "item": "rbmkmod:graphite_block"
+  },
+  "output": {
+    "count": 1,
+    "id": "rbmkmod:purified_graphite_block"
+  },
+  "per_tick_usage": true
+}
