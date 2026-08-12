@@ -8,10 +8,12 @@ public class RbmkMod {
     public static final String MODID = "rbmkmod";
 
     public RbmkMod(IEventBus modEventBus) {
-        // Rejestrujemy bloki, przedmioty i naszą własną zakładkę w kreatywnym
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
+
+        // TA LINIA JEST WYMAGANA:
+        ModMenuTypes.register(modEventBus);
     }
 }

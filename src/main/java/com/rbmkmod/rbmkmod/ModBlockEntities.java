@@ -19,6 +19,10 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("control_rod", () ->
                     BlockEntityType.Builder.of(ControlRodBlockEntity::new,
                             ModBlocks.CONTROL_ROD_BLOCK.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ControlPanelBlockEntity>> CONTROL_PANEL =
+            BLOCK_ENTITIES.register("control_panel", () ->
+                    BlockEntityType.Builder.of(ControlPanelBlockEntity::new,
+                            ModBlocks.CONTROL_PANEL_BLOCK.get()).build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

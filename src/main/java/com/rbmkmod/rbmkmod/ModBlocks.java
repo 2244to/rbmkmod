@@ -68,7 +68,12 @@ public class ModBlocks {
                     .strength(5.0F, 6.0F)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));
-
+    public static final DeferredBlock<ControlPanelBlock> CONTROL_PANEL_BLOCK = BLOCKS.registerBlock("control_panel",
+            properties -> new ControlPanelBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(4.0F, 6.0F)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }
