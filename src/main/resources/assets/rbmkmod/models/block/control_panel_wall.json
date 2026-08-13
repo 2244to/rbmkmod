@@ -1,0 +1,37 @@
+{
+  "credit": "Made for RBMK Mod - Wall Mounted SKALA Display",
+  "textures": {
+    "particle": "minecraft:block/smooth_stone",
+    "casing": "minecraft:block/smooth_stone",
+    "frame": "minecraft:block/blast_furnace_top",
+    "bezel": "minecraft:block/obsidian"
+  },
+  "elements": [
+    {
+      "name": "Wall Mount Backing",
+      "from": [0, 0, 14],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#bezel"},
+        "east": {"uv": [0, 0, 2, 16], "texture": "#casing"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#casing"},
+        "west": {"uv": [0, 0, 2, 16], "texture": "#casing"},
+        "up": {"uv": [0, 0, 16, 2], "texture": "#casing"},
+        "down": {"uv": [0, 0, 16, 2], "texture": "#casing"}
+      }
+    },
+    {
+      "name": "Industrial Steel Frame",
+      "from": [0.5, 0.5, 12],
+      "to": [15.5, 15.5, 14],
+      "faces": {
+        "north": {"uv": [1, 1, 15, 15], "texture": "#frame"},
+        "east": {"uv": [0, 0, 2, 15], "texture": "#casing"},
+        "south": {"uv": [0, 0, 15, 15], "texture": "#casing"},
+        "west": {"uv": [0, 0, 2, 15], "texture": "#casing"},
+        "up": {"uv": [0, 0, 15, 2], "texture": "#casing"},
+        "down": {"uv": [0, 0, 15, 2], "texture": "#casing"}
+      }
+    }
+  ]
+}

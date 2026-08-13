@@ -1,0 +1,48 @@
+{
+  "credit": "Made for RBMK Mod - SKALA Control Panel",
+  "textures": {
+    "particle": "minecraft:block/smooth_stone",
+    "casing": "minecraft:block/smooth_stone",
+    "dark_panel": "minecraft:block/blast_furnace_top",
+    "screen_bezel": "minecraft:block/obsidian",
+    "metal_trim": "minecraft:block/iron_block"
+  },
+  "elements": [
+    {
+      "name": "Base Casing",
+      "from": [0, 0, 0],
+      "to": [16, 10, 16],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 10], "texture": "#casing"},
+        "east": {"uv": [0, 0, 16, 10], "texture": "#casing"},
+        "south": {"uv": [0, 0, 16, 10], "texture": "#casing"},
+        "west": {"uv": [0, 0, 16, 10], "texture": "#casing"},
+        "down": {"uv": [0, 0, 16, 16], "texture": "#casing"}
+      }
+    },
+    {
+      "name": "Console Desk Top",
+      "from": [1, 10, 1],
+      "to": [15, 12, 15],
+      "faces": {
+        "north": {"uv": [1, 1, 15, 3], "texture": "#metal_trim"},
+        "east": {"uv": [1, 1, 15, 3], "texture": "#metal_trim"},
+        "south": {"uv": [1, 1, 15, 3], "texture": "#metal_trim"},
+        "west": {"uv": [1, 1, 15, 3], "texture": "#metal_trim"},
+        "up": {"uv": [1, 1, 15, 15], "texture": "#dark_panel"}
+      }
+    },
+    {
+      "name": "Screen Frame Recess",
+      "from": [2, 12, 2],
+      "to": [14, 16, 14],
+      "faces": {
+        "north": {"uv": [2, 2, 14, 6], "texture": "#screen_bezel"},
+        "east": {"uv": [2, 2, 14, 6], "texture": "#screen_bezel"},
+        "south": {"uv": [2, 2, 14, 6], "texture": "#screen_bezel"},
+        "west": {"uv": [2, 2, 14, 6], "texture": "#screen_bezel"},
+        "up": {"uv": [2, 2, 14, 14], "texture": "#screen_bezel"}
+      }
+    }
+  ]
+}

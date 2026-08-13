@@ -49,8 +49,9 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         PANELS.remove(this);
     }
 
+    // Znajdź metodę serverTick w ControlPanelBlockEntity.java i zmień 20 na 2:
     public static void serverTick(Level level, BlockPos pos, BlockState state, ControlPanelBlockEntity blockEntity) {
-        if (level.getGameTime() % 20 == 0) {
+        if (level.getGameTime() % 2 == 0) { // Odświeżanie co 2 ticki (10 FPS dla monitora)
             blockEntity.clientSyncedChannels = blockEntity.scanCoreChannelsForY(blockEntity.selectedYOffset);
             level.sendBlockUpdated(pos, state, state, 3);
         }

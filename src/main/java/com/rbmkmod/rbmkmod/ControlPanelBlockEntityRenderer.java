@@ -8,6 +8,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.joml.Matrix4f;
 
 import java.util.List;
@@ -22,17 +24,29 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
         List<CoreChannelData> channels = blockEntity.getClientSyncedChannels();
         if (channels == null || channels.isEmpty()) return;
 
+        Direction facing = Direction.NORTH;
+        if (blockEntity.getBlockState().hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+            facing = blockEntity.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        }
+
         poseStack.pushPose();
 
-        // Podniesienie całego kineskopu 1 cm nad górną ściankę bloku (Y = 1.01)
-        poseStack.translate(0.5f, 1.01f, 0.5f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-90));
+        poseStack.translate(0.5f, 0.5f, 0.5f);
+        switch (facing) {
+            case SOUTH -> poseStack.mulPose(Axis.YP.rotationDegrees(180));
+            case WEST  -> poseStack.mulPose(Axis.YP.rotationDegrees(90));
+            case EAST  -> poseStack.mulPose(Axis.YP.rotationDegrees(270));
+            default    -> {} // NORTH
+        }
+
+        // Z = -0.502f wysuwa mnemomapę idealnie na przednią ściankę bloku
+        poseStack.translate(0.0f, 0.0f, -0.502f);
 
         VertexConsumer builder = bufferSource.getBuffer(RenderType.debugQuads());
         Matrix4f matrix = poseStack.last().pose();
 
-        // WARSTWA 0: Tło ekranu monitora (z = 0.000f)
-        drawQuad(builder, matrix, -0.42f, -0.42f, 0.000f, 0.84f, 0.84f, 0x0A, 0x0D, 0x0A, 255);
+        // Tło ekranu – DOKŁADNIE 1.0f szerokości i wysokości (pełen 1 blok)
+        drawQuad(builder, matrix, -0.50f, -0.50f, 0.000f, 1.00f, 1.00f, 0x0A, 0x0D, 0x0A, 255);
 
         BlockPos centerPos = blockEntity.getBlockPos();
         int minRelX = Integer.MAX_VALUE, maxRelX = Integer.MIN_VALUE;
@@ -50,9 +64,10 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
         int gridW = Math.max(1, maxRelX - minRelX + 1);
         int gridH = Math.max(1, maxRelZ - minRelZ + 1);
 
-        float mapSize = 0.76f;
+        // Skalowanie diod na pełną szerokość 1 bloku (0.96f)
+        float mapSize = 0.96f;
         float cellSize = Math.min(mapSize / gridW, mapSize / gridH);
-        cellSize = Math.min(cellSize, 0.08f);
+        cellSize = Math.min(cellSize, 0.10f);
 
         float gap = cellSize >= 0.02f ? 0.004f : 0.0f;
         float drawSize = Math.max(0.005f, cellSize - gap);
@@ -60,7 +75,6 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
         float centerGridX = (minRelX + maxRelX) / 2.0f;
         float centerGridZ = (minRelZ + maxRelZ) / 2.0f;
 
-        // WARSTWA 1: Kafelki kanałów (z = 0.002f - wysunięte nad czarne tło)
         for (CoreChannelData ch : channels) {
             int relX = ch.pos().getX() - centerPos.getX();
             int relZ = ch.pos().getZ() - centerPos.getZ();
@@ -74,7 +88,7 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
             int g = (color >> 8) & 0xFF;
             int b = color & 0xFF;
 
-            drawQuad(builder, matrix, px, py, 0.002f, drawSize, drawSize, r, g, b, a);
+            drawQuad(builder, matrix, px, py, -0.003f, drawSize, drawSize, r, g, b, a);
         }
 
         poseStack.popPose();

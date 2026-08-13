@@ -73,7 +73,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         this.addRenderableWidget(Button.builder(Component.literal("Grafit"), b -> sendButton(1))
                 .bounds(x + 12, y + 132, 80, 18).build());
 
-        this.addRenderableWidget(Button.builder(Component.literal("AZ-5 (Bór)"), b -> sendButton(2))
+        this.addRenderableWidget(Button.builder(Component.literal("Bor"), b -> sendButton(2))
                 .bounds(x + 12, y + 154, 80, 18).build());
     }
 

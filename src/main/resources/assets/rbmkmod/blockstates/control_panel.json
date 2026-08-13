@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "rbmkmod:block/control_panel_wall" },
+    "facing=south": { "model": "rbmkmod:block/control_panel_wall", "y": 180 },
+    "facing=west":  { "model": "rbmkmod:block/control_panel_wall", "y": 270 },
+    "facing=east":  { "model": "rbmkmod:block/control_panel_wall", "y": 90 }
+  }
+}

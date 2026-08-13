@@ -73,7 +73,9 @@ public class ModBlocks {
                     .mapColor(MapColor.METAL)
                     .strength(4.0F, 6.0F)
                     .sound(SoundType.METAL)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops()));
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }
