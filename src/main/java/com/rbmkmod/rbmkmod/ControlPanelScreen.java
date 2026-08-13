@@ -45,7 +45,6 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
-        // --- Suwak: Wydajność Grafitu (0% - 100%) ---
         double initialGraphiteVal = this.graphitePercent / 100.0;
         this.graphiteSlider = new ModSlider(x + 12, y + 26, 80, 18, initialGraphiteVal) {
             @Override
@@ -62,14 +61,12 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         };
         this.addRenderableWidget(this.graphiteSlider);
 
-        // --- Sterowanie Warstwami Y ---
         this.addRenderableWidget(Button.builder(Component.literal("Y +1"), b -> sendButton(3))
                 .bounds(x + 12, y + 64, 38, 18).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Y -1"), b -> sendButton(4))
                 .bounds(x + 54, y + 64, 38, 18).build());
 
-        // --- Masowe Przełączanie Prętów ---
         this.addRenderableWidget(Button.builder(Component.literal("Wysuń"), b -> sendButton(0))
                 .bounds(x + 12, y + 110, 80, 18).build());
 
@@ -87,18 +84,75 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
     }
 
     @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
+
+        int mapX = x + 100;
+        int mapY = y + 26;
+        int mapW = 170;
+        int mapH = 192;
+        float mapCenterX = mapX + mapW / 2.0f;
+        float mapCenterY = mapY + mapH / 2.0f;
+
+        BlockPos centerPos = menu.getBlockEntity() != null ? menu.getBlockEntity().getBlockPos() : null;
+
+        if (!syncedChannels.isEmpty() && centerPos != null) {
+            int minRelX = Integer.MAX_VALUE, maxRelX = Integer.MIN_VALUE;
+            int minRelZ = Integer.MAX_VALUE, maxRelZ = Integer.MIN_VALUE;
+
+            for (CoreChannelData ch : syncedChannels) {
+                int relX = ch.pos().getX() - centerPos.getX();
+                int relZ = ch.pos().getZ() - centerPos.getZ();
+                if (relX < minRelX) minRelX = relX;
+                if (relX > maxRelX) maxRelX = relX;
+                if (relZ < minRelZ) minRelZ = relZ;
+                if (relZ > maxRelZ) maxRelZ = relZ;
+            }
+
+            int gridW = Math.max(1, maxRelX - minRelX + 1);
+            int gridH = Math.max(1, maxRelZ - minRelZ + 1);
+
+            float availableW = mapW - 12.0f;
+            float availableH = mapH - 12.0f;
+            float cellSize = Math.min(availableW / gridW, availableH / gridH);
+            cellSize = Math.min(cellSize, 12.0f);
+            cellSize = Math.max(cellSize, 1.0f);
+
+            float drawSize = Math.max(1.0f, cellSize - (cellSize >= 3.0f ? 1.0f : 0.0f));
+            float centerGridX = (minRelX + maxRelX) / 2.0f;
+            float centerGridZ = (minRelZ + maxRelZ) / 2.0f;
+
+            for (CoreChannelData ch : syncedChannels) {
+                if (ch.type() == CoreChannelData.Type.CONTROL_ROD) {
+                    int relX = ch.pos().getX() - centerPos.getX();
+                    int relZ = ch.pos().getZ() - centerPos.getZ();
+
+                    float px = mapCenterX + (relX - centerGridX) * cellSize - (drawSize / 2.0f);
+                    float py = mapCenterY + (relZ - centerGridZ) * cellSize - (drawSize / 2.0f);
+
+                    if (mouseX >= px && mouseX < px + cellSize && mouseY >= py && mouseY < py + cellSize) {
+                        boolean reverse = (button == 1); // PPM = cofanie trybu, LPM = następny
+                        PacketDistributor.sendToServer(new ToggleRodModePayload(ch.pos(), reverse));
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
-        // Tło obudowy
         guiGraphics.fill(x, y, x + this.imageWidth, y + this.imageHeight, 0xFF141814);
         guiGraphics.renderOutline(x, y, this.imageWidth, this.imageHeight, 0xFF2A3A2A);
 
-        // Separator pod tytułem
         guiGraphics.fill(x + 10, y + 20, x + this.imageWidth - 10, y + 21, 0xFF2A3A2A);
 
-        // Ekran mnemomapy
         int mapX = x + 100;
         int mapY = y + 26;
         int mapW = 170;
@@ -107,7 +161,6 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         guiGraphics.fill(mapX, mapY, mapX + mapW, mapY + mapH, 0xFF0A0D0A);
         guiGraphics.renderOutline(mapX, mapY, mapW, mapH, 0xFF00AA55);
 
-        // Celownik w tle
         int centerX = mapX + mapW / 2;
         int centerY = mapY + mapH / 2;
         guiGraphics.fill(centerX - 1, mapY + 4, centerX + 1, mapY + mapH - 4, 0x1500FF55);
@@ -140,7 +193,6 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         BlockPos centerPos = menu.getBlockEntity() != null ? menu.getBlockEntity().getBlockPos() : null;
 
         if (!syncedChannels.isEmpty()) {
-            // Obliczanie granic skanowanych bloków do auto-skalowania i wyśrodkowania
             int minRelX = Integer.MAX_VALUE, maxRelX = Integer.MIN_VALUE;
             int minRelZ = Integer.MAX_VALUE, maxRelZ = Integer.MIN_VALUE;
 
@@ -156,12 +208,11 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
             int gridW = Math.max(1, maxRelX - minRelX + 1);
             int gridH = Math.max(1, maxRelZ - minRelZ + 1);
 
-            // Wyznaczenie optymalnego cellSize pasującego do ramki (z marginesem)
             float availableW = mapW - 12.0f;
             float availableH = mapH - 12.0f;
             float cellSize = Math.min(availableW / gridW, availableH / gridH);
-            cellSize = Math.min(cellSize, 12.0f); // Maksymalny rozmiar
-            cellSize = Math.max(cellSize, 1.0f);  // Minimalny rozmiar
+            cellSize = Math.min(cellSize, 12.0f);
+            cellSize = Math.max(cellSize, 1.0f);
 
             float gap = cellSize >= 3.0f ? 1.0f : 0.0f;
             float drawSize = Math.max(1.0f, cellSize - gap);
@@ -173,7 +224,6 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
                 int relX = centerPos != null ? ch.pos().getX() - centerPos.getX() : 0;
                 int relZ = centerPos != null ? ch.pos().getZ() - centerPos.getZ() : 0;
 
-                // Wyśrodkowana pozycja każdego kafelka
                 float px = mapCenterX + (relX - centerGridX) * cellSize - (drawSize / 2.0f);
                 float py = mapCenterY + (relZ - centerGridZ) * cellSize - (drawSize / 2.0f);
 
@@ -202,6 +252,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
                 case CONTROL_ROD -> {
                     tooltip.add(Component.literal("§7Typ: §dPręt Kontrolny"));
                     tooltip.add(Component.literal("§7Tryb: §f" + hoveredChannel.rodMode().getDisplayName()));
+                    tooltip.add(Component.literal("§8[Kliknij LPM/PPM, aby przełączyć]"));
                 }
                 case GRAPHITE -> tooltip.add(Component.literal("§7Typ: §8Moderator Grafitowy"));
                 case BERYLLIUM -> tooltip.add(Component.literal("§7Typ: §9Reflektor Berylowy"));

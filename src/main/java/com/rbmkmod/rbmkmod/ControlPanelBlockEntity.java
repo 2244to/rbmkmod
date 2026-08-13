@@ -3,11 +3,17 @@ package com.rbmkmod.rbmkmod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +28,8 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     private int selectedYOffset = 0;
     private int graphitePercent = 100;
     private float zoomFactor = 1.0f;
+
+    private List<CoreChannelData> clientSyncedChannels = new ArrayList<>();
 
     public ControlPanelBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.CONTROL_PANEL.get(), pos, blockState);
@@ -41,31 +49,55 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         PANELS.remove(this);
     }
 
-    public int getSelectedYOffset() {
-        return selectedYOffset;
+    public static void serverTick(Level level, BlockPos pos, BlockState state, ControlPanelBlockEntity blockEntity) {
+        if (level.getGameTime() % 20 == 0) {
+            blockEntity.clientSyncedChannels = blockEntity.scanCoreChannelsForY(blockEntity.selectedYOffset);
+            level.sendBlockUpdated(pos, state, state, 3);
+        }
     }
 
-    public void setSelectedYOffset(int offset) {
-        this.selectedYOffset = Math.max(-50, Math.min(50, offset));
-        setChanged();
+    public List<CoreChannelData> getClientSyncedChannels() {
+        return clientSyncedChannels;
     }
 
-    public int getGraphitePercent() {
-        return graphitePercent;
-    }
+    public int getSelectedYOffset() { return selectedYOffset; }
+    public void setSelectedYOffset(int offset) { this.selectedYOffset = Math.max(-50, Math.min(50, offset)); setChanged(); }
+
+    public int getGraphitePercent() { return graphitePercent; }
 
     public void setGraphitePercent(int percent) {
-        this.graphitePercent = Math.max(0, Math.min(100, percent));
+        int clamped = Math.max(0, Math.min(100, percent));
+        this.graphitePercent = clamped;
         setChanged();
+
+        // Synchronizacja z wszystkimi pozostałymi panelami w promieniu 50 bloków
+        if (level != null && !level.isClientSide()) {
+            for (ControlPanelBlockEntity panel : PANELS) {
+                if (panel.getLevel() == level && panel.getBlockPos().closerThan(this.worldPosition, 50)) {
+                    if (panel.graphitePercent != clamped) {
+                        panel.graphitePercent = clamped;
+                        panel.setChanged();
+                    }
+                }
+            }
+        }
     }
 
-    public float getZoomFactor() {
-        return zoomFactor;
-    }
+    public float getZoomFactor() { return zoomFactor; }
+    public void setZoomFactor(float zoom) { this.zoomFactor = Math.max(1.0f, Math.min(3.0f, zoom)); setChanged(); }
 
-    public void setZoomFactor(float zoom) {
-        this.zoomFactor = Math.max(1.0f, Math.min(3.0f, zoom));
-        setChanged();
+    public void toggleSingleRodMode(BlockPos pos, boolean reverse) {
+        if (level == null) return;
+        if (level.getBlockEntity(pos) instanceof ControlRodBlockEntity rod) {
+            ControlRodMode current = rod.getMode();
+            ControlRodMode next = switch (current) {
+                case RETRACTED -> reverse ? ControlRodMode.BORON : ControlRodMode.GRAPHITE;
+                case GRAPHITE -> reverse ? ControlRodMode.RETRACTED : ControlRodMode.BORON;
+                case BORON -> reverse ? ControlRodMode.GRAPHITE : ControlRodMode.RETRACTED;
+            };
+            rod.setMode(next);
+            setChanged();
+        }
     }
 
     public List<CoreChannelData> scanCoreChannelsForY(int yOffset) {
@@ -98,7 +130,6 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                 }
             }
         }
-
         return channels;
     }
 
@@ -123,20 +154,52 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         tag.putInt("SelectedYOffset", selectedYOffset);
         tag.putInt("GraphitePercent", graphitePercent);
         tag.putFloat("ZoomFactor", zoomFactor);
+
+        ListTag list = new ListTag();
+        for (CoreChannelData ch : clientSyncedChannels) {
+            CompoundTag cTag = new CompoundTag();
+            cTag.putInt("X", ch.pos().getX());
+            cTag.putInt("Y", ch.pos().getY());
+            cTag.putInt("Z", ch.pos().getZ());
+            cTag.putInt("Type", ch.type().ordinal());
+            cTag.putDouble("Temp", ch.temperatureC());
+            if (ch.rodMode() != null) cTag.putInt("Rod", ch.rodMode().ordinal());
+            list.add(cTag);
+        }
+        tag.put("SyncedChannels", list);
     }
 
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        if (tag.contains("SelectedYOffset")) {
-            this.selectedYOffset = tag.getInt("SelectedYOffset");
+        if (tag.contains("SelectedYOffset")) this.selectedYOffset = tag.getInt("SelectedYOffset");
+        if (tag.contains("GraphitePercent")) this.graphitePercent = tag.getInt("GraphitePercent");
+        if (tag.contains("ZoomFactor")) this.zoomFactor = tag.getFloat("ZoomFactor");
+
+        if (tag.contains("SyncedChannels")) {
+            ListTag list = tag.getList("SyncedChannels", Tag.TAG_COMPOUND);
+            this.clientSyncedChannels.clear();
+            for (int i = 0; i < list.size(); i++) {
+                CompoundTag cTag = list.getCompound(i);
+                BlockPos p = new BlockPos(cTag.getInt("X"), cTag.getInt("Y"), cTag.getInt("Z"));
+                CoreChannelData.Type type = CoreChannelData.Type.values()[cTag.getInt("Type")];
+                double temp = cTag.getDouble("Temp");
+                ControlRodMode rodMode = cTag.contains("Rod") ? ControlRodMode.values()[cTag.getInt("Rod")] : null;
+                this.clientSyncedChannels.add(new CoreChannelData(p, type, temp, 0, 0, rodMode));
+            }
         }
-        if (tag.contains("GraphitePercent")) {
-            this.graphitePercent = tag.getInt("GraphitePercent");
-        }
-        if (tag.contains("ZoomFactor")) {
-            this.zoomFactor = tag.getFloat("ZoomFactor");
-        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

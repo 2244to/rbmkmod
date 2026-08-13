@@ -37,5 +37,15 @@ public class ModNetworking {
                     }
                 })
         );
+        // Wewnątrz metody register() w ModNetworking.java dodaj:
+        registrar.playToServer(
+                ToggleRodModePayload.TYPE,
+                ToggleRodModePayload.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> {
+                    if (context.player().containerMenu instanceof ControlPanelMenu menu && menu.getBlockEntity() != null) {
+                        menu.getBlockEntity().toggleSingleRodMode(payload.pos(), payload.reverse());
+                    }
+                })
+        );
     }
 }
