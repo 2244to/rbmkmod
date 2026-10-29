@@ -77,6 +77,21 @@ public class ModBlocks {
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<Block> BORON_ORE = BLOCKS.registerBlock("boron_ore",
+            properties -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE)
+                    .strength(2.5F, 3.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> BERYLLIUM_ORE = BLOCKS.registerBlock("beryllium_ore",
+            properties -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE)
+                    .strength(2.5F, 3.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }

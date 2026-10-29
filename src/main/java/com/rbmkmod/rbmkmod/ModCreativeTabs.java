@@ -31,6 +31,10 @@ public class ModCreativeTabs {
                         output.accept(ModItems.NEUTRON_GUN.get());
                         output.accept(ModItems.CONTROL_ROD_BLOCK_ITEM.get());
                         output.accept(ModItems.CONTROL_PANEL_BLOCK_ITEM.get());
+                        output.accept(ModItems.BORON_ORE_ITEM.get());
+                        output.accept(ModItems.RAW_BORON.get());
+                        output.accept(ModItems.BERYLLIUM_ORE_ITEM.get());
+                        output.accept(ModItems.RAW_BERYLLIUM.get());
                     }).build());
 
     public static void register(IEventBus eventBus) {

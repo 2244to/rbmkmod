@@ -232,7 +232,13 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
     private void explode(ServerLevel level, BlockPos pos) {
         level.removeBlock(pos, false);
         level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                6.0f, true, Level.ExplosionInteraction.TNT);
+                45.0f, true, Level.ExplosionInteraction.TNT);
+
+        // Zwiększono liczbę neutronów do zakresu 5000 - 10000
+        int newNeutrons = 5000 + level.random.nextInt(5000);
+        for (int i = 0; i < newNeutrons; i++) {
+            emitNeutron(level);
+        }
 
         for (int i = 0; i < 30; i++) {
             Vec3 dir = new Vec3(

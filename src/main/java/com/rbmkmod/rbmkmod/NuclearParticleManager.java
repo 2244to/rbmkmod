@@ -9,7 +9,7 @@ import java.util.*;
 
 @EventBusSubscriber(modid = RbmkMod.MODID)
 public final class NuclearParticleManager {
-    private static final int MAX_PARTICLES_PER_LEVEL = 256;
+    private static final int MAX_PARTICLES_PER_LEVEL = 8196;
     private static final Map<ServerLevel, List<NuclearParticle>> PARTICLES = new WeakHashMap<>();
     private static final Map<ServerLevel, List<NuclearParticle>> PENDING = new WeakHashMap<>();
 

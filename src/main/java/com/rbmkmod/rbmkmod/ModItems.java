@@ -49,6 +49,17 @@ public class ModItems {
             properties -> new BlockItem(ModBlocks.CONTROL_ROD_BLOCK.get(), properties));
     public static final DeferredItem<Item> CONTROL_PANEL_BLOCK_ITEM = ITEMS.registerItem("control_panel",
             properties -> new BlockItem(ModBlocks.CONTROL_PANEL_BLOCK.get(), properties));
+    public static final DeferredItem<Item> RAW_BORON = ITEMS.register("raw_boron",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> RAW_BERYLLIUM = ITEMS.register("raw_beryllium",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> BORON_ORE_ITEM = ITEMS.registerItem("boron_ore",
+            properties -> new BlockItem(ModBlocks.BORON_ORE.get(), properties));
+
+    public static final DeferredItem<Item> BERYLLIUM_ORE_ITEM = ITEMS.registerItem("beryllium_ore",
+            properties -> new BlockItem(ModBlocks.BERYLLIUM_ORE.get(), properties));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
