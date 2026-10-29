@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "U": { "item": "rbmkmod:enriched_uranium" },
+    "B": { "item": "rbmkmod:beryllium_block" },
+    "R": { "item": "minecraft:redstone_block" }
+  },
+  "pattern": [
+    "BUI",
+    " RI",
+    "  I"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rbmkmod:neutron_gun"
+  }
+}

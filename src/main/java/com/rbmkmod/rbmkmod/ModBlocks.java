@@ -46,15 +46,15 @@ public class ModBlocks {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));
 
-    // Blok Berylu - reflektor neutronów
-    public static final DeferredBlock<Block> BERYLLIUM_BLOCK = BLOCKS.registerBlock("beryllium_block",
-            properties -> new Block(BlockBehaviour.Properties.of()
+    // Blok Berylu - reflektor neutronów (używa klasy NeutronReflectorBlock)
+    public static final DeferredBlock<NeutronReflectorBlock> BERYLLIUM_BLOCK = BLOCKS.registerBlock("beryllium_block",
+            properties -> new NeutronReflectorBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .strength(5.0F, 10.0F)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));
 
-    // Blok Boru - absorber neutronów (pręty kontrolne)
+    // Blok Boru - absorber neutronów
     public static final DeferredBlock<Block> BORON_BLOCK = BLOCKS.registerBlock("boron_block",
             properties -> new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
@@ -68,6 +68,7 @@ public class ModBlocks {
                     .strength(5.0F, 6.0F)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));
+
     public static final DeferredBlock<ControlPanelBlock> CONTROL_PANEL_BLOCK = BLOCKS.registerBlock("control_panel",
             properties -> new ControlPanelBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)

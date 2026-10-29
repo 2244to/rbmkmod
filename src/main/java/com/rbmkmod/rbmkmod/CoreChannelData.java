@@ -16,7 +16,8 @@ public record CoreChannelData(
         FUEL,
         CONTROL_ROD,
         GRAPHITE,
-        BERYLLIUM
+        BERYLLIUM,
+        BORON
     }
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CoreChannelData> STREAM_CODEC = StreamCodec.of(

@@ -1,18 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "building",
-  "pattern": [
-    "GGG",
-    "GGG",
-    "GGG"
-  ],
   "key": {
-    "G": {
-      "item": "rbmkmod:graphite"
-    }
+    "#": { "item": "rbmkmod:graphite" }
   },
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
   "result": {
-    "id": "rbmkmod:graphite_block",
-    "count": 1
+    "count": 1,
+    "id": "rbmkmod:graphite_block"
   }
 }

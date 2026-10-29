@@ -1,16 +1,12 @@
 {
-  "type": "mekanism:purifying",
-  "chemical_input": {
-    "amount": 200,
-    "chemical": "mekanism:oxygen"
-  },
-  "item_input": {
-    "count": 1,
+  "type": "minecraft:blasting",
+  "category": "blocks",
+  "cookingtime": 400,
+  "experience": 1.5,
+  "ingredient": {
     "item": "rbmkmod:graphite_block"
   },
-  "output": {
-    "count": 1,
+  "result": {
     "id": "rbmkmod:purified_graphite_block"
-  },
-  "per_tick_usage": true
+  }
 }

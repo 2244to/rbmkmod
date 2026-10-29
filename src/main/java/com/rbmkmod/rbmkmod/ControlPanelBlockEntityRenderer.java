@@ -39,13 +39,11 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
             default    -> {} // NORTH
         }
 
-        // Z = -0.502f wysuwa mnemomapę idealnie na przednią ściankę bloku
         poseStack.translate(0.0f, 0.0f, -0.502f);
 
         VertexConsumer builder = bufferSource.getBuffer(RenderType.debugQuads());
         Matrix4f matrix = poseStack.last().pose();
 
-        // Tło ekranu – DOKŁADNIE 1.0f szerokości i wysokości (pełen 1 blok)
         drawQuad(builder, matrix, -0.50f, -0.50f, 0.000f, 1.00f, 1.00f, 0x0A, 0x0D, 0x0A, 255);
 
         BlockPos centerPos = blockEntity.getBlockPos();
@@ -64,10 +62,10 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
         int gridW = Math.max(1, maxRelX - minRelX + 1);
         int gridH = Math.max(1, maxRelZ - minRelZ + 1);
 
-        // Skalowanie diod na pełną szerokość 1 bloku (0.96f)
         float mapSize = 0.96f;
-        float cellSize = Math.min(mapSize / gridW, mapSize / gridH);
-        cellSize = Math.min(cellSize, 0.10f);
+        float zoom = blockEntity.getZoomFactor();
+        float cellSize = Math.min(mapSize / gridW, mapSize / gridH) * zoom;
+        cellSize = Math.min(cellSize, 0.20f);
 
         float gap = cellSize >= 0.02f ? 0.004f : 0.0f;
         float drawSize = Math.max(0.005f, cellSize - gap);
@@ -80,7 +78,12 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
             int relZ = ch.pos().getZ() - centerPos.getZ();
 
             float px = (relX - centerGridX) * cellSize - (drawSize / 2.0f);
-            float py = (relZ - centerGridZ) * cellSize - (drawSize / 2.0f);
+            float py = -(relZ - centerGridZ) * cellSize - (drawSize / 2.0f);
+
+            // Przycinanie do ekranu 1x1 bloku przy włączonym zoomie
+            if (px < -0.48f || px + drawSize > 0.48f || py < -0.48f || py + drawSize > 0.48f) {
+                continue;
+            }
 
             int color = getChannelColor(ch);
             int a = (color >> 24) & 0xFF;
@@ -117,6 +120,7 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
             };
             case GRAPHITE -> 0xFF4A4A4A;
             case BERYLLIUM -> 0xFF2255FF;
+            case BORON -> 0xFF770099;
         };
     }
 }

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": { "item": "rbmkmod:boron_ingot" },
+    "G": { "item": "rbmkmod:graphite" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "pattern": [
+    "IBI",
+    "IBI",
+    "IGI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rbmkmod:control_rod"
+  }
+}

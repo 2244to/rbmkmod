@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -32,7 +33,7 @@ public class ControlPanelMenu extends AbstractContainerMenu {
     @Override
     public void broadcastChanges() {
         super.broadcastChanges();
-        if (blockEntity != null && !blockEntity.getLevel().isClientSide()) {
+        if (blockEntity != null && blockEntity.getLevel() != null && !blockEntity.getLevel().isClientSide()) {
             if (this.player instanceof ServerPlayer serverPlayer) {
                 int yOffset = blockEntity.getSelectedYOffset();
                 int graphite = blockEntity.getGraphitePercent();
@@ -53,6 +54,7 @@ public class ControlPanelMenu extends AbstractContainerMenu {
             case 2 -> blockEntity.setAllRodsMode(ControlRodMode.BORON);
             case 3 -> blockEntity.setSelectedYOffset(blockEntity.getSelectedYOffset() + 1);
             case 4 -> blockEntity.setSelectedYOffset(blockEntity.getSelectedYOffset() - 1);
+            case 5 -> blockEntity.triggerAz5(); // Przycisk awaryjny AZ-5
         }
         return true;
     }
@@ -64,7 +66,9 @@ public class ControlPanelMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return true;
+        if (blockEntity == null || blockEntity.getLevel() == null) return false;
+        return stillValid(ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos()),
+                player, ModBlocks.CONTROL_PANEL_BLOCK.get());
     }
 
     public ControlPanelBlockEntity getBlockEntity() {

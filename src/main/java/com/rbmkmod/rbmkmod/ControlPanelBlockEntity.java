@@ -49,9 +49,8 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         PANELS.remove(this);
     }
 
-    // Znajdź metodę serverTick w ControlPanelBlockEntity.java i zmień 20 na 2:
     public static void serverTick(Level level, BlockPos pos, BlockState state, ControlPanelBlockEntity blockEntity) {
-        if (level.getGameTime() % 2 == 0) { // Odświeżanie co 2 ticki (10 FPS dla monitora)
+        if (level.getGameTime() % 2 == 0) {
             blockEntity.clientSyncedChannels = blockEntity.scanCoreChannelsForY(blockEntity.selectedYOffset);
             level.sendBlockUpdated(pos, state, state, 3);
         }
@@ -71,10 +70,10 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         this.graphitePercent = clamped;
         setChanged();
 
-        // Synchronizacja z wszystkimi pozostałymi panelami w promieniu 50 bloków
+        int radius = Config.PANEL_SCAN_RADIUS.get();
         if (level != null && !level.isClientSide()) {
             for (ControlPanelBlockEntity panel : PANELS) {
-                if (panel.getLevel() == level && panel.getBlockPos().closerThan(this.worldPosition, 50)) {
+                if (panel.getLevel() == level && panel.getBlockPos().closerThan(this.worldPosition, radius)) {
                     if (panel.graphitePercent != clamped) {
                         panel.graphitePercent = clamped;
                         panel.setChanged();
@@ -96,7 +95,7 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                 case GRAPHITE -> reverse ? ControlRodMode.RETRACTED : ControlRodMode.BORON;
                 case BORON -> reverse ? ControlRodMode.GRAPHITE : ControlRodMode.RETRACTED;
             };
-            rod.setMode(next);
+            rod.setColumnMode(next);
             setChanged();
         }
     }
@@ -105,7 +104,7 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         List<CoreChannelData> channels = new ArrayList<>();
         if (level == null) return channels;
 
-        int radius = 50;
+        int radius = Config.PANEL_SCAN_RADIUS.get();
         int radiusSq = radius * radius;
         int targetY = worldPosition.getY() + yOffset;
 
@@ -127,6 +126,8 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                         channels.add(new CoreChannelData(p, CoreChannelData.Type.GRAPHITE, 20.0, 0, 0, null));
                     } else if (state.is(ModBlocks.BERYLLIUM_BLOCK.get())) {
                         channels.add(new CoreChannelData(p, CoreChannelData.Type.BERYLLIUM, 20.0, 0, 0, null));
+                    } else if (state.is(ModBlocks.BORON_BLOCK.get())) {
+                        channels.add(new CoreChannelData(p, CoreChannelData.Type.BORON, 20.0, 0, 0, null));
                     }
                 }
             }
@@ -136,7 +137,7 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
 
     public void setAllRodsMode(ControlRodMode mode) {
         if (level == null) return;
-        int radius = 50;
+        int radius = Config.PANEL_SCAN_RADIUS.get();
         int radiusSq = radius * radius;
 
         BlockPos.betweenClosedStream(
@@ -147,6 +148,14 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                 rod.setMode(mode);
             }
         });
+    }
+
+    /**
+     * Procedura awaryjna AZ-5 (SCRAM): zrzuca wszystkie pręty na Bor i obniża skuteczność grafitu do 0%.
+     */
+    public void triggerAz5() {
+        setAllRodsMode(ControlRodMode.BORON);
+        setGraphitePercent(0);
     }
 
     @Override
@@ -180,12 +189,15 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         if (tag.contains("SyncedChannels")) {
             ListTag list = tag.getList("SyncedChannels", Tag.TAG_COMPOUND);
             this.clientSyncedChannels.clear();
+            CoreChannelData.Type[] types = CoreChannelData.Type.values();
+            ControlRodMode[] modes = ControlRodMode.values();
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag cTag = list.getCompound(i);
                 BlockPos p = new BlockPos(cTag.getInt("X"), cTag.getInt("Y"), cTag.getInt("Z"));
-                CoreChannelData.Type type = CoreChannelData.Type.values()[cTag.getInt("Type")];
+                int typeIdx = Math.abs(cTag.getInt("Type")) % types.length;
+                CoreChannelData.Type type = types[typeIdx];
                 double temp = cTag.getDouble("Temp");
-                ControlRodMode rodMode = cTag.contains("Rod") ? ControlRodMode.values()[cTag.getInt("Rod")] : null;
+                ControlRodMode rodMode = cTag.contains("Rod") ? modes[Math.abs(cTag.getInt("Rod")) % modes.length] : null;
                 this.clientSyncedChannels.add(new CoreChannelData(p, type, temp, 0, 0, rodMode));
             }
         }

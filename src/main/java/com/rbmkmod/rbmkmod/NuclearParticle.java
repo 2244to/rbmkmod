@@ -24,7 +24,7 @@ public class NuclearParticle {
     private int remainingTicks;
     private double neutronEnergyEv;
     private BlockPos lastInteraction;
-    private BlockPos originPos;
+    private final BlockPos originPos;
     private boolean damagedPlayer;
 
     public NuclearParticle(Type type, Vec3 position, Vec3 velocity, int remainingTicks) {
@@ -57,69 +57,77 @@ public class NuclearParticle {
                 int graphitePercent = getNearbyGraphitePercent(level, blockPos);
                 double graphiteEffect = graphitePercent / 100.0;
 
+                // 0. Stały blok Boru = natychmiastowa absorpcja neutronu
+                if (hitBlock.is(ModBlocks.BORON_BLOCK.get())) {
+                    return false;
+                }
+
                 // 1. Grafit stacjonarny = moderator: spowalnia i rozprasza neutron
                 if (hitBlock.is(ModBlocks.PURIFIED_GRAPHITE_BLOCK.get()) || hitBlock.is(ModBlocks.GRAPHITE_BLOCK.get())) {
                     if (!blockPos.equals(lastInteraction)) {
-                        if (level.random.nextDouble() < graphiteEffect) {
+                        // Oczyszczony grafit ma 100% wydajności, zwykły grafit 70% i 10% szansy na pochłonięcie
+                        boolean isPurified = hitBlock.is(ModBlocks.PURIFIED_GRAPHITE_BLOCK.get());
+                        if (!isPurified && level.random.nextFloat() < 0.10f) {
+                            return false; // Zanieczyszczenia w zwykłym graficie pochłaniają neutron
+                        }
+
+                        double purityMultiplier = isPurified ? 1.0 : 0.7;
+                        if (level.random.nextDouble() < graphiteEffect * purityMultiplier) {
                             neutronEnergyEv = Math.max(1.0, neutronEnergyEv * 1e-8);
                         }
-                        double speed = velocity.length();
-                        if (speed > 1.0e-6) {
-                            Vec3 scatter = new Vec3(
-                                    level.random.nextDouble() - 0.5,
-                                    level.random.nextDouble() - 0.5,
-                                    level.random.nextDouble() - 0.5
-                            ).scale(0.4);
-                            velocity = velocity.normalize().add(scatter).normalize().scale(speed);
-                        }
+                        scatterVelocity(level);
                         lastInteraction = blockPos;
                     }
 
-                    // 2. Beryl = reflektor: odbicie zwierciadlane
-                } else if (hitBlock.is(ModBlocks.BERYLLIUM_BLOCK.get())) {
+                    // 2. Beryl = reflektor: odbicie zwierciadlane z uwzględnieniem getReflectionRate()
+                } else if (hitBlock.getBlock() instanceof NeutronReflectorBlock reflector) {
                     if (!blockPos.equals(lastInteraction)) {
-                        Vec3 prevPos = position.subtract(velocity);
-                        BlockPos prevBlockPos = BlockPos.containing(prevPos.x, prevPos.y, prevPos.z);
+                        if (level.random.nextFloat() <= reflector.getReflectionRate()) {
+                            Vec3 prevPos = position.subtract(velocity);
+                            BlockPos prevBlockPos = BlockPos.containing(prevPos.x, prevPos.y, prevPos.z);
 
-                        int dx = blockPos.getX() - prevBlockPos.getX();
-                        int dy = blockPos.getY() - prevBlockPos.getY();
-                        int dz = blockPos.getZ() - prevBlockPos.getZ();
+                            int dx = blockPos.getX() - prevBlockPos.getX();
+                            int dy = blockPos.getY() - prevBlockPos.getY();
+                            int dz = blockPos.getZ() - prevBlockPos.getZ();
 
-                        double vx = (dx != 0) ? -velocity.x : velocity.x;
-                        double vy = (dy != 0) ? -velocity.y : velocity.y;
-                        double vz = (dz != 0) ? -velocity.z : velocity.z;
+                            double vx = (dx != 0) ? -velocity.x : velocity.x;
+                            double vy = (dy != 0) ? -velocity.y : velocity.y;
+                            double vz = (dz != 0) ? -velocity.z : velocity.z;
 
-                        if (dx == 0 && dy == 0 && dz == 0) {
-                            velocity = velocity.scale(-1.0);
-                        } else {
-                            velocity = new Vec3(vx, vy, vz);
+                            if (dx == 0 && dy == 0 && dz == 0) {
+                                velocity = velocity.scale(-1.0);
+                            } else {
+                                velocity = new Vec3(vx, vy, vz);
+                            }
                         }
-
                         lastInteraction = blockPos;
                     }
 
-                    // 3. Uran = blok paliwowy: rozszczepienie jąder
+                    // 3. Wzbogacony Uran = blok paliwowy: rozszczepienie jąder
                 } else if (hitBlock.is(ModBlocks.ENRICHED_URANIUM_BLOCK.get())
                         && level instanceof ServerLevel serverLevel
                         && level.getBlockEntity(blockPos) instanceof EnrichedUraniumBlockEntity reactor) {
 
-                    if (!blockPos.equals(originPos)) {
-                        boolean isThermal = neutronEnergyEv < 1000.0;
-
-                        if (isThermal || level.random.nextFloat() < 0.05f) {
-                            reactor.receiveNeutron(neutronEnergyEv, serverLevel);
-                            return false;
-                        } else {
-                            Vec3 scatter = new Vec3(
-                                    level.random.nextDouble() - 0.5,
-                                    level.random.nextDouble() - 0.5,
-                                    level.random.nextDouble() - 0.5
-                            ).scale(0.4);
-                            velocity = velocity.normalize().add(scatter).normalize().scale(velocity.length());
-                        }
+                    boolean isThermal = neutronEnergyEv < 1000.0;
+                    if (isThermal || level.random.nextFloat() < 0.05f) {
+                        reactor.receiveNeutron(neutronEnergyEv, serverLevel);
+                        return false;
+                    } else {
+                        scatterVelocity(level);
+                        lastInteraction = blockPos;
                     }
 
-                    // 4. Pręt sterujący = pręt z wyborem trybu
+                    // 4. Niewzbogacony blok uranu = rozprasza lub rzadko pochłania
+                } else if (hitBlock.is(ModBlocks.URANIUM_BLOCK.get())) {
+                    if (!blockPos.equals(lastInteraction)) {
+                        if (level.random.nextFloat() < 0.35f) {
+                            return false; // Pochłonięcie przez U-238
+                        }
+                        scatterVelocity(level);
+                        lastInteraction = blockPos;
+                    }
+
+                    // 5. Pręt sterujący = pręt z wyborem trybu
                 } else if (hitBlock.is(ModBlocks.CONTROL_ROD_BLOCK.get())
                         && level.getBlockEntity(blockPos) instanceof ControlRodBlockEntity controlRod) {
 
@@ -132,15 +140,7 @@ public class NuclearParticle {
                                 if (level.random.nextDouble() < graphiteEffect) {
                                     neutronEnergyEv = Math.max(1.0, neutronEnergyEv * 1e-8);
                                 }
-                                double speed = velocity.length();
-                                if (speed > 1.0e-6) {
-                                    Vec3 scatter = new Vec3(
-                                            level.random.nextDouble() - 0.5,
-                                            level.random.nextDouble() - 0.5,
-                                            level.random.nextDouble() - 0.5
-                                    ).scale(0.4);
-                                    velocity = velocity.normalize().add(scatter).normalize().scale(speed);
-                                }
+                                scatterVelocity(level);
                                 lastInteraction = blockPos;
                             }
                             case RETRACTED -> {
@@ -153,9 +153,22 @@ public class NuclearParticle {
         return remainingTicks > 0;
     }
 
+    private void scatterVelocity(Level level) {
+        double speed = velocity.length();
+        if (speed > 1.0e-6) {
+            Vec3 scatter = new Vec3(
+                    level.random.nextDouble() - 0.5,
+                    level.random.nextDouble() - 0.5,
+                    level.random.nextDouble() - 0.5
+            ).scale(0.4);
+            velocity = velocity.normalize().add(scatter).normalize().scale(speed);
+        }
+    }
+
     private int getNearbyGraphitePercent(Level level, BlockPos pos) {
+        int radius = Config.PANEL_SCAN_RADIUS.get();
         for (ControlPanelBlockEntity panel : ControlPanelBlockEntity.PANELS) {
-            if (panel.getLevel() == level && panel.getBlockPos().closerThan(pos, 50)) {
+            if (panel.getLevel() == level && panel.getBlockPos().closerThan(pos, radius)) {
                 return panel.getGraphitePercent();
             }
         }
@@ -167,10 +180,13 @@ public class NuclearParticle {
             return;
         }
 
+        float dmg = Config.RADIATION_DAMAGE.get().floatValue();
+        if (dmg <= 0) return;
+
         for (Player player : serverLevel.players()) {
             if (player.getBoundingBox().inflate(0.3).contains(position)) {
                 DamageSource damageSource = serverLevel.damageSources().generic();
-                player.hurt(damageSource, 0.5f);
+                player.hurt(damageSource, dmg);
                 damagedPlayer = true;
                 return;
             }

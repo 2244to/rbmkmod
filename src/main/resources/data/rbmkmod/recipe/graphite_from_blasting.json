@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 200,
+  "experience": 0.7,
+  "ingredient": {
+    "item": "minecraft:coal"
+  },
+  "result": {
+    "id": "rbmkmod:graphite"
+  }
+}

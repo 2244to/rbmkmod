@@ -16,8 +16,10 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
     private List<CoreChannelData> syncedChannels = new ArrayList<>();
     private int currentYOffset = 0;
     private int graphitePercent = 100;
+    private float zoomFactor = 1.0f;
 
     private ModSlider graphiteSlider;
+    private ModSlider zoomSlider;
 
     public ControlPanelScreen(ControlPanelMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -26,6 +28,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         if (menu.getBlockEntity() != null) {
             this.graphitePercent = menu.getBlockEntity().getGraphitePercent();
             this.currentYOffset = menu.getBlockEntity().getSelectedYOffset();
+            this.zoomFactor = menu.getBlockEntity().getZoomFactor();
         }
     }
 
@@ -33,9 +36,13 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         this.syncedChannels = channels;
         this.currentYOffset = yOffset;
         this.graphitePercent = graphitePercent;
+        this.zoomFactor = zoomFactor;
 
         if (graphiteSlider != null && !graphiteSlider.isDragging()) {
             graphiteSlider.setSliderValue(graphitePercent / 100.0);
+        }
+        if (zoomSlider != null && !zoomSlider.isDragging()) {
+            zoomSlider.setSliderValue((zoomFactor - 1.0f) / 2.0f);
         }
     }
 
@@ -46,7 +53,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         int y = (this.height - this.imageHeight) / 2;
 
         double initialGraphiteVal = this.graphitePercent / 100.0;
-        this.graphiteSlider = new ModSlider(x + 12, y + 26, 80, 18, initialGraphiteVal) {
+        this.graphiteSlider = new ModSlider(x + 12, y + 24, 80, 18, initialGraphiteVal) {
             @Override
             protected void updateMessage() {
                 int val = (int) Math.round(this.value * 100.0);
@@ -61,20 +68,39 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         };
         this.addRenderableWidget(this.graphiteSlider);
 
+        double initialZoomVal = (this.zoomFactor - 1.0) / 2.0;
+        this.zoomSlider = new ModSlider(x + 12, y + 44, 80, 18, initialZoomVal) {
+            @Override
+            protected void updateMessage() {
+                float z = 1.0f + (float) (this.value * 2.0);
+                setMessage(Component.literal(String.format("Zoom: %.1fx", z)));
+            }
+
+            @Override
+            protected void applyValue() {
+                zoomFactor = 1.0f + (float) (this.value * 2.0);
+                PacketDistributor.sendToServer(new SetPanelSettingPayload(1, zoomFactor));
+            }
+        };
+        this.addRenderableWidget(this.zoomSlider);
+
         this.addRenderableWidget(Button.builder(Component.literal("Y +1"), b -> sendButton(3))
-                .bounds(x + 12, y + 64, 38, 18).build());
+                .bounds(x + 12, y + 76, 38, 18).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Y -1"), b -> sendButton(4))
-                .bounds(x + 54, y + 64, 38, 18).build());
+                .bounds(x + 54, y + 76, 38, 18).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Wysuń"), b -> sendButton(0))
                 .bounds(x + 12, y + 110, 80, 18).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Grafit"), b -> sendButton(1))
-                .bounds(x + 12, y + 132, 80, 18).build());
+                .bounds(x + 12, y + 130, 80, 18).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Bor"), b -> sendButton(2))
-                .bounds(x + 12, y + 154, 80, 18).build());
+                .bounds(x + 12, y + 150, 80, 18).build());
+
+        this.addRenderableWidget(Button.builder(Component.literal("§c§lAZ-5 (SCRAM)"), b -> sendButton(5))
+                .bounds(x + 12, y + 174, 80, 20).build());
     }
 
     private void sendButton(int id) {
@@ -115,8 +141,8 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
             float availableW = mapW - 12.0f;
             float availableH = mapH - 12.0f;
-            float cellSize = Math.min(availableW / gridW, availableH / gridH);
-            cellSize = Math.min(cellSize, 12.0f);
+            float cellSize = Math.min(availableW / gridW, availableH / gridH) * zoomFactor;
+            cellSize = Math.min(cellSize, 24.0f);
             cellSize = Math.max(cellSize, 1.0f);
 
             float drawSize = Math.max(1.0f, cellSize - (cellSize >= 3.0f ? 1.0f : 0.0f));
@@ -132,7 +158,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
                     float py = mapCenterY + (relZ - centerGridZ) * cellSize - (drawSize / 2.0f);
 
                     if (mouseX >= px && mouseX < px + cellSize && mouseY >= py && mouseY < py + cellSize) {
-                        boolean reverse = (button == 1); // PPM = cofanie trybu, LPM = następny
+                        boolean reverse = (button == 1);
                         PacketDistributor.sendToServer(new ToggleRodModePayload(ch.pos(), reverse));
                         return true;
                     }
@@ -177,10 +203,23 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
         guiGraphics.drawString(this.font, "SYSTEM SKALA - MONIT RBMK", x + 12, y + 8, 0x00FF55, false);
 
-        String yText = "Różnica Y: " + (currentYOffset >= 0 ? "+" : "") + currentYOffset;
-        guiGraphics.drawString(this.font, yText, x + 12, y + 50, 0xFFFF55, false);
+        String yText = "Poziom Y: " + (currentYOffset >= 0 ? "+" : "") + currentYOffset;
+        guiGraphics.drawString(this.font, yText, x + 12, y + 65, 0xFFFF55, false);
 
-        guiGraphics.drawString(this.font, "PRĘTY STERUJĄCE", x + 12, y + 96, 0xAAAAAA, false);
+        guiGraphics.drawString(this.font, "PRĘTY STERUJĄCE", x + 12, y + 98, 0xAAAAAA, false);
+
+        // Podsumowanie telemetrii na dole po lewej
+        double maxTemp = 20.0;
+        int fuelCount = 0;
+        for (CoreChannelData ch : syncedChannels) {
+            if (ch.type() == CoreChannelData.Type.FUEL) {
+                fuelCount++;
+                if (ch.temperatureC() > maxTemp) maxTemp = ch.temperatureC();
+            }
+        }
+        int tempColor = maxTemp > 1000 ? 0xFF3333 : (maxTemp > 400 ? 0xFFAA00 : 0x00FF55);
+        guiGraphics.drawString(this.font, String.format("T max: %.0f°C", maxTemp), x + 12, y + 198, tempColor, false);
+        guiGraphics.drawString(this.font, "Paliwo: " + fuelCount, x + 12, y + 210, 0xAAAAAA, false);
 
         int mapX = x + 100;
         int mapY = y + 26;
@@ -210,8 +249,8 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
             float availableW = mapW - 12.0f;
             float availableH = mapH - 12.0f;
-            float cellSize = Math.min(availableW / gridW, availableH / gridH);
-            cellSize = Math.min(cellSize, 12.0f);
+            float cellSize = Math.min(availableW / gridW, availableH / gridH) * zoomFactor;
+            cellSize = Math.min(cellSize, 24.0f);
             cellSize = Math.max(cellSize, 1.0f);
 
             float gap = cellSize >= 3.0f ? 1.0f : 0.0f;
@@ -250,12 +289,13 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
                     tooltip.add(Component.literal("§7Para: §f" + hoveredChannel.steamMb() + " mB"));
                 }
                 case CONTROL_ROD -> {
-                    tooltip.add(Component.literal("§7Typ: §dPręt Kontrolny"));
+                    tooltip.add(Component.literal("§7Typ: §dPręt Kontrolny (Kolumna)"));
                     tooltip.add(Component.literal("§7Tryb: §f" + hoveredChannel.rodMode().getDisplayName()));
-                    tooltip.add(Component.literal("§8[Kliknij LPM/PPM, aby przełączyć]"));
+                    tooltip.add(Component.literal("§8[Kliknij LPM/PPM, aby przełączyć kolumnę]"));
                 }
                 case GRAPHITE -> tooltip.add(Component.literal("§7Typ: §8Moderator Grafitowy"));
                 case BERYLLIUM -> tooltip.add(Component.literal("§7Typ: §9Reflektor Berylowy"));
+                case BORON -> tooltip.add(Component.literal("§7Typ: §5Stały Absorber Borowy"));
             }
 
             guiGraphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);
@@ -280,6 +320,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
             };
             case GRAPHITE -> 0xFF4A4A4A;
             case BERYLLIUM -> 0xFF2255FF;
+            case BORON -> 0xFF770099;
         };
     }
 

@@ -21,6 +21,7 @@ public class ControlRodBlockEntity extends BlockEntity {
     }
 
     public void setMode(ControlRodMode mode) {
+        if (this.mode == mode) return;
         this.mode = mode;
         setChanged();
         if (level != null && !level.isClientSide) {
@@ -28,8 +29,30 @@ public class ControlRodBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * Ustawia tryb dla tego bloku oraz wszystkich połączonych w pionie bloków prętów sterujących.
+     */
+    public void setColumnMode(ControlRodMode mode) {
+        setMode(mode);
+        if (level == null || level.isClientSide) return;
+
+        // Propagacja w górę
+        BlockPos.MutableBlockPos cursor = worldPosition.mutable().move(0, 1, 0);
+        while (level.getBlockEntity(cursor) instanceof ControlRodBlockEntity rodAbove) {
+            rodAbove.setMode(mode);
+            cursor.move(0, 1, 0);
+        }
+
+        // Propagacja w dół
+        cursor.set(worldPosition).move(0, -1, 0);
+        while (level.getBlockEntity(cursor) instanceof ControlRodBlockEntity rodBelow) {
+            rodBelow.setMode(mode);
+            cursor.move(0, -1, 0);
+        }
+    }
+
     public void cycleMode() {
-        setMode(this.mode.next());
+        setColumnMode(this.mode.next());
     }
 
     @Override
