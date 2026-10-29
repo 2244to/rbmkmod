@@ -35,6 +35,9 @@ public class ModCreativeTabs {
                         output.accept(ModItems.RAW_BORON.get());
                         output.accept(ModItems.BERYLLIUM_ORE_ITEM.get());
                         output.accept(ModItems.RAW_BERYLLIUM.get());
+                        output.accept(ModItems.BERYLLIUM_INGOT.get());
+                        output.accept(ModItems.DEEPSLATE_BERYLLIUM_ORE.get());
+                        output.accept(ModItems.DEEPSLATE_BORON_ORE.get());
                     }).build());
 
     public static void register(IEventBus eventBus) {

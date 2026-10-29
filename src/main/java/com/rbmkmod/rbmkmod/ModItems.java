@@ -60,6 +60,14 @@ public class ModItems {
 
     public static final DeferredItem<Item> BERYLLIUM_ORE_ITEM = ITEMS.registerItem("beryllium_ore",
             properties -> new BlockItem(ModBlocks.BERYLLIUM_ORE.get(), properties));
+    public static final DeferredItem<Item> BERYLLIUM_INGOT = ITEMS.register("beryllium_ingot",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DEEPSLATE_BERYLLIUM_ORE = ITEMS.registerItem("deepslate_beryllium_ore",
+            properties -> new BlockItem(ModBlocks.DEEPSLATE_BERYLLIUM_ORE.get(), properties));
+    public static final DeferredItem<Item> DEEPSLATE_BORON_ORE = ITEMS.registerItem("deepslate_boron_ore",
+            properties-> new BlockItem(ModBlocks.DEEPSLATE_BORON_ORE.get(), properties));
+
+
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

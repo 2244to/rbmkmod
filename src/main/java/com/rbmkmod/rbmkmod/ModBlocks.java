@@ -90,6 +90,18 @@ public class ModBlocks {
                     .strength(2.5F, 3.0F)
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> DEEPSLATE_BERYLLIUM_ORE = BLOCKS.registerBlock("deepslate_beryllium_ore",
+            properties -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE)
+                    .strength(2.5F, 3.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> DEEPSLATE_BORON_ORE = BLOCKS.registerBlock("deepslate_boron_ore",
+            properties -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE)
+                    .strength(2.5F, 3.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
 
 
     public static void register(IEventBus eventBus) {
