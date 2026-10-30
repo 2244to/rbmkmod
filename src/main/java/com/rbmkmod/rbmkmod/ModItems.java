@@ -66,6 +66,8 @@ public class ModItems {
             properties -> new BlockItem(ModBlocks.DEEPSLATE_BERYLLIUM_ORE.get(), properties));
     public static final DeferredItem<Item> DEEPSLATE_BORON_ORE = ITEMS.registerItem("deepslate_boron_ore",
             properties-> new BlockItem(ModBlocks.DEEPSLATE_BORON_ORE.get(), properties));
+    public static final DeferredItem<Item> DEEPSLATE_URANIUM_ORE = ITEMS.registerItem("deepslate_uranium_ore",
+            properties-> new BlockItem(ModBlocks.DEEPSLATE_URANIUM_ORE.get(), properties));
 
 
 

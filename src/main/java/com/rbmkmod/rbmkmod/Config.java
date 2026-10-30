@@ -15,7 +15,7 @@ public class Config {
 
     public static final ModConfigSpec.DoubleValue RADIATION_DAMAGE = BUILDER
             .comment("Obrażenia zadawane graczowi przez pojedynczą cząstkę promieniowania")
-            .defineInRange("radiationDamage", 0.5, 0.0, 20.0);
+            .defineInRange("radiationDamage", 1.5, 1.0, 20.0);
 
     public static final ModConfigSpec.IntValue STEAM_PER_WATER_MB = BUILDER
             .comment("Ilość mB pary Mekanism produkowanej z 1 mB wody")

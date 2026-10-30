@@ -28,6 +28,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
 
@@ -231,11 +232,16 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
 
     private void explode(ServerLevel level, BlockPos pos) {
         level.removeBlock(pos, false);
-        level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                45.0f, true, Level.ExplosionInteraction.TNT);
 
-        // Zwiększono liczbę neutronów do zakresu 5000 - 10000
+        level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5,
+                pos.getZ() + 0.5, 45.0f, true,
+                Level.ExplosionInteraction.TNT);
+
+        // Fala uderzeniowa
+        NuclearShockwaveManager.create(level, Vec3.atCenterOf(pos));
+
         int newNeutrons = 5000 + level.random.nextInt(5000);
+
         for (int i = 0; i < newNeutrons; i++) {
             emitNeutron(level);
         }
@@ -254,6 +260,7 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
                     60,
                     pos
             );
+
             NuclearParticleManager.add(level, radiation);
         }
     }
