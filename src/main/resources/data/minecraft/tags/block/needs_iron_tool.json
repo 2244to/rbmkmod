@@ -1,11 +1,12 @@
+
 {
   "replace": false,
   "values": [
     "rbmkmod:uranium_ore",
-    "rbmkmod:uranium_block",
-    "rbmkmod:enriched_uranium_block",
-    "rbmkmod:beryllium_block",
-    "rbmkmod:control_rod",
-    "rbmkmod:control_panel"
+    "rbmkmod:deepslate_uranium_ore",
+    "rbmkmod:beryllium_ore",
+    "rbmkmod:deepslate_beryllium_ore",
+    "rbmkmod:boron_ore",
+    "rbmkmod:deepslate_boron_ore"
   ]
 }

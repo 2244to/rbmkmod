@@ -1,0 +1,18 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "building",
+    "pattern": [
+        "###",
+        "###",
+        "###"
+    ],
+    "key": {
+        "#": {
+            "item": "rbmkmod:beryllium_ingot"
+        }
+    },
+    "result": {
+        "id": "rbmkmod:beryllium_block",
+        "count": 1
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "building",
+    "pattern": [
+        "###",
+        "###",
+        "###"
+    ],
+    "key": {
+        "#": {
+            "item": "rbmkmod:boron_ingot"
+        }
+    },
+    "result": {
+        "id": "rbmkmod:boron_block",
+        "count": 1
+    }
+}

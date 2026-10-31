@@ -39,6 +39,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.DEEPSLATE_BERYLLIUM_ORE.get());
                         output.accept(ModItems.DEEPSLATE_BORON_ORE.get());
                         output.accept(ModItems.DEEPSLATE_URANIUM_ORE.get());
+                        output.accept(ModItems.RAW_URANIUM.get());
                     }).build());
 
     public static void register(IEventBus eventBus) {

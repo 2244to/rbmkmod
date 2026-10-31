@@ -1,0 +1,14 @@
+
+{
+  "replace": false,
+  "values": [
+    "rbmkmod:control_rod",
+    "rbmkmod:control_panel",
+    "rbmkmod:neutron_gun",
+    "rbmkmod:beryllium_block",
+    "rbmkmod:boron_block",
+    "rbmkmod:graphite_block",
+    "rbmkmod:purified_graphite_block",
+    "rbmkmod:enriched_uranium_block"
+  ]
+}

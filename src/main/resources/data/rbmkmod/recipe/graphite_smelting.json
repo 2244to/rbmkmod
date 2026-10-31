@@ -1,0 +1,13 @@
+{
+    "type": "minecraft:smelting",
+    "category": "misc",
+    "cookingtime": 200,
+    "experience": 0.1,
+    "ingredient": {
+        "item": "minecraft:coal"
+    },
+    "result": {
+        "id": "rbmkmod:graphite",
+        "count": 1
+    }
+}

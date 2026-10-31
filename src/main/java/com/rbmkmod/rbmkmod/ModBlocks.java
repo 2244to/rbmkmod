@@ -1,3 +1,4 @@
+
 package com.rbmkmod.rbmkmod;
 
 import net.minecraft.world.level.block.Block;
@@ -9,107 +10,148 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModBlocks {
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.Blocks.createBlocks(RbmkMod.MODID);
 
-    public static final DeferredBlock<Block> GRAPHITE_BLOCK = BLOCKS.registerBlock("graphite_block",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_BLACK)
-                    .strength(3.0F, 6.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredRegister.Blocks BLOCKS =
+            DeferredRegister.Blocks.createBlocks(RbmkMod.MODID);
 
-    public static final DeferredBlock<Block> PURIFIED_GRAPHITE_BLOCK = BLOCKS.registerBlock("purified_graphite_block",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_BLACK)
-                    .strength(4.0F, 8.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
+    // =========================================
+    // GRAFIT
+    // =========================================
 
-    public static final DeferredBlock<Block> URANIUM_ORE = BLOCKS.registerBlock("uranium_ore",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(3.0F, 3.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> GRAPHITE_BLOCK =
+            BLOCKS.registerBlock("graphite_block",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_BLACK)
+                            .strength(3.5F, 6.0F)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<Block> URANIUM_BLOCK = BLOCKS.registerBlock("uranium_block",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.EMERALD)
-                    .strength(5.0F, 6.0F)
-                    .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> PURIFIED_GRAPHITE_BLOCK =
+            BLOCKS.registerBlock("purified_graphite_block",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_BLACK)
+                            .strength(5.0F, 9.0F)
+                            .sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<EnrichedUraniumBlock> ENRICHED_URANIUM_BLOCK = BLOCKS.registerBlock("enriched_uranium_block",
-            properties -> new EnrichedUraniumBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.DIAMOND)
-                    .strength(6.0F, 8.0F)
-                    .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops()));
+    // =========================================
+    // URAN
+    // =========================================
 
-    // Blok Berylu - reflektor neutronów (używa klasy NeutronReflectorBlock)
-    public static final DeferredBlock<NeutronReflectorBlock> BERYLLIUM_BLOCK = BLOCKS.registerBlock("beryllium_block",
-            properties -> new NeutronReflectorBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.METAL)
-                    .strength(5.0F, 10.0F)
-                    .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> URANIUM_ORE =
+            BLOCKS.registerBlock("uranium_ore",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.STONE)
+                            .strength(3.0F, 3.0F)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
 
-    // Blok Boru - absorber neutronów
-    public static final DeferredBlock<Block> BORON_BLOCK = BLOCKS.registerBlock("boron_block",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_GRAY)
-                    .strength(4.0F, 8.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> DEEPSLATE_URANIUM_ORE =
+            BLOCKS.registerBlock("deepslate_uranium_ore",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.DEEPSLATE)
+                            .strength(4.5F, 3.0F)
+                            .sound(SoundType.DEEPSLATE)
+                            .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<ControlRodBlock> CONTROL_ROD_BLOCK = BLOCKS.registerBlock("control_rod",
-            properties -> new ControlRodBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.METAL)
-                    .strength(5.0F, 6.0F)
-                    .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> URANIUM_BLOCK =
+            BLOCKS.registerBlock("uranium_block",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.EMERALD)
+                            .strength(5.0F, 6.0F)
+                            .sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<ControlPanelBlock> CONTROL_PANEL_BLOCK = BLOCKS.registerBlock("control_panel",
-            properties -> new ControlPanelBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.METAL)
-                    .strength(4.0F, 6.0F)
-                    .sound(SoundType.METAL)
-                    .noOcclusion()
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<EnrichedUraniumBlock> ENRICHED_URANIUM_BLOCK =
+            BLOCKS.registerBlock("enriched_uranium_block",
+                    properties -> new EnrichedUraniumBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.DIAMOND)
+                            .strength(6.0F, 8.0F)
+                            .sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<Block> BORON_ORE = BLOCKS.registerBlock("boron_ore",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(2.5F, 3.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
+    // =========================================
+    // BERYL
+    // =========================================
 
-    public static final DeferredBlock<Block> BERYLLIUM_ORE = BLOCKS.registerBlock("beryllium_ore",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(2.5F, 3.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
-    public static final DeferredBlock<Block> DEEPSLATE_BERYLLIUM_ORE = BLOCKS.registerBlock("deepslate_beryllium_ore",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(2.5F, 3.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
-    public static final DeferredBlock<Block> DEEPSLATE_BORON_ORE = BLOCKS.registerBlock("deepslate_boron_ore",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(2.5F, 3.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
-    public static final DeferredBlock<Block> DEEPSLATE_URANIUM_ORE = BLOCKS.registerBlock("deepslate_uranium_ore",
-            properties -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(2.5F, 3.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
+    // Reflektor neutronów
+    public static final DeferredBlock<NeutronReflectorBlock> BERYLLIUM_BLOCK =
+            BLOCKS.registerBlock("beryllium_block",
+                    properties -> new NeutronReflectorBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.METAL)
+                            .strength(5.0F, 8.0F)
+                            .sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<Block> BERYLLIUM_ORE =
+            BLOCKS.registerBlock("beryllium_ore",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.STONE)
+                            .strength(3.0F, 3.0F)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<Block> DEEPSLATE_BERYLLIUM_ORE =
+            BLOCKS.registerBlock("deepslate_beryllium_ore",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.DEEPSLATE)
+                            .strength(4.5F, 3.0F)
+                            .sound(SoundType.DEEPSLATE)
+                            .requiresCorrectToolForDrops()));
+
+    // =========================================
+    // BOR
+    // =========================================
+
+    // Absorber neutronów
+    public static final DeferredBlock<Block> BORON_BLOCK =
+            BLOCKS.registerBlock("boron_block",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_GRAY)
+                            .strength(4.5F, 7.0F)
+                            .sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> BORON_ORE =
+            BLOCKS.registerBlock("boron_ore",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.STONE)
+                            .strength(3.0F, 3.0F)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> DEEPSLATE_BORON_ORE =
+            BLOCKS.registerBlock("deepslate_boron_ore",
+                    properties -> new Block(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.DEEPSLATE)
+                            .strength(4.5F, 3.0F)
+                            .sound(SoundType.DEEPSLATE)
+                            .requiresCorrectToolForDrops()));
+
+    // =========================================
+    // ELEMENTY REAKTORA
+    // =========================================
+
+    public static final DeferredBlock<ControlRodBlock> CONTROL_ROD_BLOCK =
+            BLOCKS.registerBlock("control_rod",
+                    properties -> new ControlRodBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.METAL)
+                            .strength(4.0F, 6.0F)
+                            .sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<ControlPanelBlock> CONTROL_PANEL_BLOCK =
+            BLOCKS.registerBlock("control_panel",
+                    properties -> new ControlPanelBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.METAL)
+                            .strength(3.5F, 6.0F)
+                            .sound(SoundType.METAL)
+                            .noOcclusion()
+                            .requiresCorrectToolForDrops()));
+
+    // =========================================
+    // REJESTRACJA
+    // =========================================
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);

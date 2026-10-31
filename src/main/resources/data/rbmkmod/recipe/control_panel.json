@@ -1,0 +1,24 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "IRI",
+        "RGR",
+        "III"
+    ],
+    "key": {
+        "I": {
+            "item": "minecraft:iron_ingot"
+        },
+        "R": {
+            "item": "minecraft:redstone"
+        },
+        "G": {
+            "item": "rbmkmod:graphite"
+        }
+    },
+    "result": {
+        "id": "rbmkmod:control_panel",
+        "count": 1
+    }
+}

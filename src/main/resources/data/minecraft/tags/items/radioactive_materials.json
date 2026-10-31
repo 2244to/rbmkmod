@@ -1,0 +1,11 @@
+
+{
+  "replace": false,
+  "values": [
+    "rbmkmod:raw_uranium",
+    "rbmkmod:uranium_ingot",
+    "rbmkmod:uranium_block",
+    "rbmkmod:enriched_uranium",
+    "rbmkmod:enriched_uranium_block"
+  ]
+}

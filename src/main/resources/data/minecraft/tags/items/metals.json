@@ -1,0 +1,14 @@
+
+{
+  "replace": false,
+  "values": [
+    "rbmkmod:beryllium_ingot",
+    "rbmkmod:boron_ingot",
+    "rbmkmod:uranium_ingot",
+    "rbmkmod:enriched_uranium",
+    "rbmkmod:beryllium_block",
+    "rbmkmod:boron_block",
+    "rbmkmod:uranium_block",
+    "rbmkmod:enriched_uranium_block"
+  ]
+}

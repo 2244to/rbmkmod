@@ -1,0 +1,9 @@
+
+{
+  "replace": false,
+  "values": [
+    "rbmkmod:graphite",
+    "rbmkmod:graphite_block",
+    "rbmkmod:purified_graphite_block"
+  ]
+}

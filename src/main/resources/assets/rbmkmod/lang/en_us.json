@@ -1,17 +1,35 @@
+
 {
-  "creativetab.rbmkmod.rbmk_tab": "Reaktor RBMK",
-  "item.rbmkmod.graphite": "Sztabka grafitu",
-  "item.rbmkmod.uranium_ingot": "Sztabka uranu",
-  "item.rbmkmod.enriched_uranium": "Wzbogacony uran",
-  "item.rbmkmod.boron_ingot": "Sztabka boru",
-  "item.rbmkmod.neutron_gun": "Działo neutronowe",
-  "block.rbmkmod.graphite_block": "Blok grafitu",
-  "block.rbmkmod.purified_graphite_block": "Blok oczyszczonego grafitu",
-  "block.rbmkmod.uranium_ore": "Ruda uranu",
-  "block.rbmkmod.uranium_block": "Blok uranu",
-  "block.rbmkmod.enriched_uranium_block": "Blok wzbogaconego uranu",
-  "block.rbmkmod.beryllium_block": "Blok berylu",
-  "block.rbmkmod.boron_block": "Blok boru",
-  "block.rbmkmod.control_rod": "Pręt sterujący RBMK",
-  "block.rbmkmod.control_panel": "Pulpit sterowniczy SKALA"
+"creativetab.rbmkmod.rbmk_tab": "Reaktor RBMK",
+
+"item.rbmkmod.graphite": "Grafit",
+"item.rbmkmod.uranium_ingot": "Sztabka uranu",
+"item.rbmkmod.enriched_uranium": "Wzbogacony uran",
+"item.rbmkmod.boron_ingot": "Sztabka boru",
+"item.rbmkmod.beryllium_ingot": "Sztabka berylu",
+
+"item.rbmkmod.raw_uranium": "Surowy uran",
+"item.rbmkmod.raw_boron": "Surowy bor",
+"item.rbmkmod.raw_beryllium": "Surowy beryl",
+
+"item.rbmkmod.neutron_gun": "Działo neutronowe",
+
+"block.rbmkmod.graphite_block": "Blok grafitu",
+"block.rbmkmod.purified_graphite_block": "Blok oczyszczonego grafitu",
+
+"block.rbmkmod.uranium_ore": "Ruda uranu",
+"block.rbmkmod.deepslate_uranium_ore": "Łupkowa ruda uranu",
+"block.rbmkmod.uranium_block": "Blok uranu",
+"block.rbmkmod.enriched_uranium_block": "Blok wzbogaconego uranu",
+
+"block.rbmkmod.boron_ore": "Ruda boru",
+"block.rbmkmod.deepslate_boron_ore": "Łupkowa ruda boru",
+"block.rbmkmod.boron_block": "Blok boru",
+
+"block.rbmkmod.beryllium_ore": "Ruda berylu",
+"block.rbmkmod.deepslate_beryllium_ore": "Łupkowa ruda berylu",
+"block.rbmkmod.beryllium_block": "Blok berylu",
+
+"block.rbmkmod.control_rod": "Pręt sterujący",
+"block.rbmkmod.control_panel": "Pulpit sterowniczy SKALA"
 }
