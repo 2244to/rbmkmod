@@ -279,9 +279,10 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
                 if (ch.temperatureC() > maxTemp) maxTemp = ch.temperatureC();
             }
         }
-        int tempColor = (autoScramEnabled && maxTemp >= autoScramTemp) || maxTemp > 1200
-                ? 0xFF3333
-                : (maxTemp > 500 ? 0xFFAA00 : 0x00FF55);
+        int tempColor = (maxTemp > 1200) ? (int) 0xFFFF2222L
+                : (maxTemp > 500)  ? (int) 0xFFFF8800L
+                : (maxTemp > 150)  ? (int) 0xFFFFEE00L
+                : (int) 0xFF00FF55L;
 
         guiGraphics.drawString(this.font, String.format("T max: %.0f°C", maxTemp), x + 12, y + 224, tempColor, false);
         guiGraphics.drawString(this.font, "Paliwo: " + fuelCount, x + 12, y + 236, 0xAAAAAA, false);
@@ -373,9 +374,9 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         return switch (ch.type()) {
             case FUEL -> {
                 double temp = ch.temperatureC();
-                if (temp > 1750) yield 0xFFFF2222;
-                if (temp > 1000) yield 0xFFFF8800;
-                if (temp > 500) yield 0xFFFFEE00;
+                if (temp > 1200) yield 0xFFFF2222;
+                if (temp > 500) yield 0xFFFF8800;
+                if (temp > 150) yield 0xFFFFEE00;
                 yield 0xFF00FF55;
             }
             case CONTROL_ROD -> switch (ch.rodMode()) {
