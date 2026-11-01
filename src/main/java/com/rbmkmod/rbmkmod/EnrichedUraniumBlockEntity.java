@@ -12,13 +12,18 @@ import mekanism.common.registries.MekanismChemicals;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
@@ -187,7 +192,6 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
     }
 
     public void receiveNeutron(double energyEv, ServerLevel level) {
-        // Ciepło trafia do bufora zamiast powodować nagły skok w ułamku sekundy
         double heatGenerated = (energyEv > 100_000) ? 10.0 : 22.0;
         this.heatBuffer += heatGenerated;
 
@@ -218,11 +222,8 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
 
     private void handleBoiling(ServerLevel level, BlockPos pos) {
         final double BOILING_POINT = 373.15;
-        // Ile stopni ciepła odbiera 1 mB odparowanej wody
         final double COOLING_PER_WATER_MB = 2.0;
-        // Maksymalny przepływ wody na tick
         final int MAX_WATER_PER_TICK = 400;
-        // Jaki ułamek nadwyżki ciepła woda może odebrać w jednym ticku (20% = płynna stabilizacja)
         final double WATER_COOLING_FACTOR = 0.20;
 
         int steamRatio = Math.max(1, Config.STEAM_PER_WATER_MB.get());
@@ -231,13 +232,8 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
             return;
         }
 
-        // Nadwyżka temperatury powyżej 100°C (373.15 K)
         double excessHeat = temperature - BOILING_POINT;
-
-        // Woda przejmuje w tym ticku tylko 20% nadwyżki ciepła (zapobiega skakaniu temperatury)
         double heatToTransfer = excessHeat * WATER_COOLING_FACTOR;
-
-        // Obliczamy ile mB wody potrzeba, aby odebrać tę porcję ciepła
         int desiredWaterToBoil = (int) Math.ceil(heatToTransfer / COOLING_PER_WATER_MB);
 
         int maxWaterToBoil = Math.min(
@@ -249,7 +245,6 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
             return;
         }
 
-        // Sprawdzamy ile pary zmieści się w zbiorniku
         long requestedSteam = (long) maxWaterToBoil * steamRatio;
 
         ChemicalStack simulatedRemainder = steamTank.insert(
@@ -269,7 +264,6 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
             return;
         }
 
-        // Pobieramy wodę
         FluidStack drainedWater = waterTank.drain(
                 actualWaterToBoil,
                 IFluidHandler.FluidAction.EXECUTE
@@ -279,7 +273,6 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
             return;
         }
 
-        // Produkujemy parę
         long actualSteamToInsert = (long) drainedWater.getAmount() * steamRatio;
         steamTank.insert(
                 new ChemicalStack(MekanismChemicals.STEAM, actualSteamToInsert),
@@ -287,7 +280,6 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
                 AutomationType.INTERNAL
         );
 
-        // Odbieramy dokładnie tyle ciepła, ile faktycznie pochłonęła woda (ale nie więcej niż heatToTransfer)
         double actualCooling = Math.min(
                 heatToTransfer,
                 drainedWater.getAmount() * COOLING_PER_WATER_MB
@@ -367,19 +359,37 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
     private void explode(ServerLevel level, BlockPos pos) {
         level.removeBlock(pos, false);
 
-        level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5,
-                pos.getZ() + 0.5, 45.0f, true,
-                Level.ExplosionInteraction.TNT);
+        // 1. Wystrzelenie odłamków bloków i rozgrzanej magmy (korium) w powietrze PRZED zniszczeniem terenu
+        launchExplosionDebris(level, pos);
 
+        // 2. Potężne efekty dźwiękowe słyszalne z dużej odległości
+        level.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 16.0f, 0.5f);
+        level.playSound(null, pos, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.WEATHER, 20.0f, 0.6f);
+        level.playSound(null, pos, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.BLOCKS, 16.0f, 0.5f);
+
+        // 3. Błysk początkowy i gigantyczne cząsteczki wybuchu w epicentrum
+        level.sendParticles(ParticleTypes.FLASH, pos.getX() + 0.5, pos.getY() + 2.0, pos.getZ() + 0.5, 10, 2.0, 2.0, 2.0, 0.0);
+        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 25, 6.0, 4.0, 6.0, 0.0);
+        level.sendParticles(ParticleTypes.SONIC_BOOM, pos.getX() + 0.5, pos.getY() + 4.0, pos.getZ() + 0.5, 15, 3.0, 6.0, 3.0, 0.0);
+        level.sendParticles(ParticleTypes.LAVA, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, 250, 5.0, 4.0, 5.0, 0.5);
+
+        // 4. Wielopunktowa eksplozja tworząca głęboki i szeroki krater
+        level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 45.0f, true, Level.ExplosionInteraction.TNT);
+        level.explode(null, pos.getX() + 8.5, pos.getY() - 2.0, pos.getZ() + 0.5, 30.0f, true, Level.ExplosionInteraction.TNT);
+        level.explode(null, pos.getX() - 8.5, pos.getY() - 2.0, pos.getZ() + 0.5, 30.0f, true, Level.ExplosionInteraction.TNT);
+        level.explode(null, pos.getX() + 0.5, pos.getY() - 2.0, pos.getZ() + 8.5, 30.0f, true, Level.ExplosionInteraction.TNT);
+        level.explode(null, pos.getX() + 0.5, pos.getY() - 2.0, pos.getZ() - 8.5, 30.0f, true, Level.ExplosionInteraction.TNT);
+
+        // 5. Fala uderzeniowa i grzyb atomowy
         NuclearShockwaveManager.create(level, Vec3.atCenterOf(pos));
 
-        int newNeutrons = 5000 + level.random.nextInt(5000);
-
+        // 6. Emisja neutronów i promieniowania gamma
+        int newNeutrons = 3000 + level.random.nextInt(3000);
         for (int i = 0; i < newNeutrons; i++) {
             emitNeutron(level);
         }
 
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 60; i++) {
             Vec3 dir = new Vec3(
                     level.random.nextDouble() - 0.5,
                     level.random.nextDouble() - 0.5,
@@ -390,11 +400,72 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
                     NuclearParticle.Type.GAMMA,
                     Vec3.atCenterOf(pos),
                     dir,
-                    60,
+                    80,
                     pos
             );
 
             NuclearParticleManager.add(level, radiation);
+        }
+    }
+
+    /**
+     * Wyrywa bloki wokół reaktora i wystrzeliwuje je jako fizyczne bloki (FallingBlockEntity)
+     * lecące po trajektorii balistycznej we wszystkich kierunkach.
+     */
+    private void launchExplosionDebris(ServerLevel level, BlockPos center) {
+        var random = level.random;
+        int debrisCount = 85;
+
+        for (int i = 0; i < debrisCount; i++) {
+            int dx = random.nextInt(17) - 8;
+            int dy = random.nextInt(11) - 4;
+            int dz = random.nextInt(17) - 8;
+
+            BlockPos samplePos = center.offset(dx, dy, dz);
+            BlockState state = level.getBlockState(samplePos);
+
+            // Część odłamków zamieniamy w rozżarzoną magmę / stopione korium i czarny bazalt
+            BlockState flyingState;
+            float roll = random.nextFloat();
+            if (roll < 0.25f) {
+                flyingState = Blocks.MAGMA_BLOCK.defaultBlockState();
+            } else if (roll < 0.45f) {
+                flyingState = Blocks.BLACKSTONE.defaultBlockState();
+            } else if (!state.isAir() && state.getDestroySpeed(level, samplePos) >= 0 && !(state.getBlock() instanceof EnrichedUraniumBlock)) {
+                flyingState = state;
+            } else {
+                flyingState = Blocks.COBBLESTONE.defaultBlockState();
+            }
+
+            // Tworzymy odlatujący blok nieco ponad epicentrum, aby nie zablokował się w ścianie
+            BlockPos spawnPos = center.offset(
+                    dx / 2,
+                    Math.max(2, dy + 3),
+                    dz / 2
+            );
+
+            FallingBlockEntity fallingBlock = FallingBlockEntity.fall(level, spawnPos, flyingState);
+            fallingBlock.dropItem = false; // Nie zaśmieca świata tysiącami itemów
+            fallingBlock.setHurtsEntities(3.0f, 60); // Spadający gruz zadaje obrażenia!
+
+            // Kierunek wystrzału na zewnątrz i wysoko w górę
+            double angle = random.nextDouble() * Math.PI * 2.0;
+            double horizontalSpeed = 0.4 + random.nextDouble() * 1.8;
+            double verticalSpeed = 0.9 + random.nextDouble() * 1.9;
+
+            fallingBlock.setDeltaMovement(
+                    Math.cos(angle) * horizontalSpeed,
+                    verticalSpeed,
+                    Math.sin(angle) * horizontalSpeed
+            );
+            fallingBlock.hurtMarked = true;
+
+            // Dodatkowe cząsteczki gruzu
+            level.sendParticles(
+                    new BlockParticleOption(ParticleTypes.BLOCK, flyingState),
+                    spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5,
+                    6, 0.5, 0.5, 0.5, 0.2
+            );
         }
     }
 
