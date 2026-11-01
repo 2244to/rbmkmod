@@ -19,7 +19,6 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
@@ -28,7 +27,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
 
@@ -39,7 +37,10 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
     private double temperature = ROOM_TEMPERATURE;
     private double lastSyncedTemp = ROOM_TEMPERATURE;
 
-    private final FluidTank waterTank = new FluidTank(10_000) {
+    // Bufor ciepła zapewniający bezwładność cieplną (wygładza skoki temperatury od uderzeń neutronów)
+    private double heatBuffer = 0.0;
+
+    private final FluidTank waterTank = new FluidTank(32_000) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
             return stack.getFluid() == Fluids.WATER;
@@ -51,7 +52,7 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
         }
     };
 
-    private final IChemicalTank steamTank = BasicChemicalTank.create(10_000, this::setChanged);
+    private final IChemicalTank steamTank = BasicChemicalTank.create(32_000, this::setChanged);
 
     public EnrichedUraniumBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.ENRICHED_URANIUM_REACTOR.get(), pos, blockState);
@@ -61,19 +62,47 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
         if (level == null || level.isClientSide()) return;
         ServerLevel serverLevel = (ServerLevel) level;
 
-        // Pionowe wyrównywanie wody, pary i temperatury w kolumnie paliwowej RBMK
+        double previousTemperature = blockEntity.temperature;
+
+        // 1. Płynne przekazywanie ciepła z bufora rozszczepienia do pręta (10% na tick)
+        if (blockEntity.heatBuffer > 0.001) {
+            double transferredHeat = blockEntity.heatBuffer * 0.10;
+            blockEntity.temperature += transferredHeat;
+            blockEntity.heatBuffer -= transferredHeat;
+        } else {
+            blockEntity.heatBuffer = 0.0;
+        }
+
+        // 2. Wypchnij parę przed operacjami
+        blockEntity.pushSteam(serverLevel, pos);
+
+        // 3. Wyrównaj wodę, temperaturę i prześlij parę w górę kolumny
         blockEntity.balanceVerticalChannel(serverLevel, pos);
 
+        // 4. Wypchnij parę otrzymaną z dolnych bloków
         blockEntity.pushSteam(serverLevel, pos);
+
+        // 5. Płynne gotowanie wody i chłodzenie
         blockEntity.handleBoiling(serverLevel, pos);
 
-        // Rzadkie samorzutne rozszczepienie (spontaneous fission), pozwalające na powolny rozruch z prętami grafitowymi
+        // 6. Wypchnij nowo wyprodukowaną parę
+        blockEntity.pushSteam(serverLevel, pos);
+
+        // Rzadkie samorzutne rozszczepienie (spontaneous fission)
         if (serverLevel.random.nextFloat() < 0.002f) {
             blockEntity.emitNeutron(serverLevel);
         }
 
+        // Pasywne chłodzenie do otoczenia
         if (blockEntity.temperature > ROOM_TEMPERATURE) {
-            blockEntity.temperature = Math.max(ROOM_TEMPERATURE, blockEntity.temperature - 0.1);
+            blockEntity.temperature = Math.max(
+                    ROOM_TEMPERATURE,
+                    blockEntity.temperature - 0.05
+            );
+        }
+
+        if (Math.abs(blockEntity.temperature - previousTemperature) > 0.001) {
+            blockEntity.setChanged();
         }
 
         double maxTemp = Config.EXPLOSION_TEMPERATURE.get();
@@ -91,48 +120,76 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
         blockEntity.checkTemperatureSync(serverLevel);
     }
 
-    /**
-     * Pozwala na budowanie wysokich kolumn paliwowych:
-     * Woda spływa i wyrównuje się w pionie, para unosi się do góry, a ciepło przepływa między sąsiadującymi blokami uranu.
-     */
     private void balanceVerticalChannel(ServerLevel level, BlockPos pos) {
-        // Przekazywanie pary i ciepła w górę kolumny
-        if (level.getBlockEntity(pos.above()) instanceof EnrichedUraniumBlockEntity above) {
-            // Para unosi się w górę
-            if (!this.steamTank.isEmpty()) {
-                long steamToMove = Math.min(this.steamTank.getStack().getAmount(), 500);
-                ChemicalStack stack = new ChemicalStack(MekanismChemicals.STEAM, steamToMove);
-                ChemicalStack rem = above.steamTank.insert(stack, Action.EXECUTE, AutomationType.INTERNAL);
-                long moved = steamToMove - rem.getAmount();
-                if (moved > 0) {
-                    this.steamTank.extract(moved, Action.EXECUTE, AutomationType.INTERNAL);
-                }
+        if (!(level.getBlockEntity(pos.above()) instanceof EnrichedUraniumBlockEntity above)) {
+            return;
+        }
+
+        // PRZESYŁ PARY W GÓRĘ
+        if (!steamTank.isEmpty()) {
+            long available = steamTank.getStack().getAmount();
+
+            ChemicalStack offered = new ChemicalStack(
+                    MekanismChemicals.STEAM,
+                    available
+            );
+
+            ChemicalStack remainder = above.steamTank.insert(
+                    offered,
+                    Action.EXECUTE,
+                    AutomationType.INTERNAL
+            );
+
+            long moved = available - remainder.getAmount();
+
+            if (moved > 0) {
+                steamTank.extract(
+                        moved,
+                        Action.EXECUTE,
+                        AutomationType.INTERNAL
+                );
             }
-            // Wyrównywanie wody między poziomami
-            int diffWater = this.waterTank.getFluidAmount() - above.waterTank.getFluidAmount();
-            if (Math.abs(diffWater) > 20) {
-                int transfer = Math.abs(diffWater) / 2;
-                if (diffWater > 0) {
-                    int filled = above.waterTank.fill(new FluidStack(Fluids.WATER, transfer), IFluidHandler.FluidAction.EXECUTE);
-                    this.waterTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
-                } else {
-                    int filled = this.waterTank.fill(new FluidStack(Fluids.WATER, transfer), IFluidHandler.FluidAction.EXECUTE);
-                    above.waterTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
-                }
+        }
+
+        // WYRÓWNYWANIE WODY
+        int diffWater = waterTank.getFluidAmount() - above.waterTank.getFluidAmount();
+
+        if (Math.abs(diffWater) > 2) {
+            int transfer = Math.abs(diffWater) / 2;
+
+            if (diffWater > 0) {
+                int filled = above.waterTank.fill(
+                        new FluidStack(Fluids.WATER, transfer),
+                        IFluidHandler.FluidAction.EXECUTE
+                );
+                waterTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
+            } else {
+                int filled = waterTank.fill(
+                        new FluidStack(Fluids.WATER, transfer),
+                        IFluidHandler.FluidAction.EXECUTE
+                );
+                above.waterTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
             }
-            // Przewodzenie ciepła w kolumnie
-            double tempDiff = this.temperature - above.temperature;
-            if (Math.abs(tempDiff) > 1.0) {
-                double delta = tempDiff * 0.1;
-                this.temperature -= delta;
-                above.temperature += delta;
-            }
+        }
+
+        // PŁYNNE PRZEWODZENIE CIEPŁA W KOLUMNIE
+        double tempDiff = temperature - above.temperature;
+
+        if (Math.abs(tempDiff) > 0.1) {
+            double delta = tempDiff * 0.15;
+
+            temperature -= delta;
+            above.temperature += delta;
+
+            setChanged();
+            above.setChanged();
         }
     }
 
     public void receiveNeutron(double energyEv, ServerLevel level) {
-        double heatGenerated = (energyEv > 100_000) ? 15.0 : 35.0;
-        this.temperature += heatGenerated;
+        // Ciepło trafia do bufora zamiast powodować nagły skok w ułamku sekundy
+        double heatGenerated = (energyEv > 100_000) ? 10.0 : 22.0;
+        this.heatBuffer += heatGenerated;
 
         int newNeutrons = 2 + level.random.nextInt(2);
         for (int i = 0; i < newNeutrons; i++) {
@@ -160,72 +217,149 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
     }
 
     private void handleBoiling(ServerLevel level, BlockPos pos) {
-        int steamRatio = Config.STEAM_PER_WATER_MB.get();
-        if (this.temperature >= 373.15 && !waterTank.isEmpty()) {
-            int maxWaterToBoil = (int) Math.min(waterTank.getFluidAmount(), Math.min(20, (this.temperature - 373.15) / 10));
-            if (maxWaterToBoil > 0) {
-                long requestedSteam = (long) maxWaterToBoil * steamRatio;
-                ChemicalStack potentialSteam = new ChemicalStack(MekanismChemicals.STEAM, requestedSteam);
+        final double BOILING_POINT = 373.15;
+        // Ile stopni ciepła odbiera 1 mB odparowanej wody
+        final double COOLING_PER_WATER_MB = 2.0;
+        // Maksymalny przepływ wody na tick
+        final int MAX_WATER_PER_TICK = 400;
+        // Jaki ułamek nadwyżki ciepła woda może odebrać w jednym ticku (20% = płynna stabilizacja)
+        final double WATER_COOLING_FACTOR = 0.20;
 
-                ChemicalStack remainder = steamTank.insert(potentialSteam, Action.SIMULATE, AutomationType.INTERNAL);
-                long acceptedSteam = requestedSteam - remainder.getAmount();
+        int steamRatio = Math.max(1, Config.STEAM_PER_WATER_MB.get());
 
-                int actualWaterToBoil = (int) (acceptedSteam / steamRatio);
-
-                if (actualWaterToBoil > 0) {
-                    waterTank.drain(actualWaterToBoil, IFluidHandler.FluidAction.EXECUTE);
-
-                    ChemicalStack steamToInsert = new ChemicalStack(MekanismChemicals.STEAM, (long) actualWaterToBoil * steamRatio);
-                    steamTank.insert(steamToInsert, Action.EXECUTE, AutomationType.INTERNAL);
-
-                    this.temperature -= actualWaterToBoil * 0.5;
-
-                    level.sendParticles(ParticleTypes.BUBBLE_POP,
-                            pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5,
-                            2, 0.1, 0.1, 0.1, 0.05);
-                }
-            }
+        if (waterTank.isEmpty() || temperature <= BOILING_POINT) {
+            return;
         }
 
-        for (Direction dir : Direction.values()) {
-            BlockPos neighborPos = pos.relative(dir);
-            BlockState neighborState = level.getBlockState(neighborPos);
-            if (neighborState.getFluidState().is(Fluids.WATER) || neighborState.is(Blocks.WATER)) {
-                if (this.temperature > 373.15) {
-                    this.temperature = Math.max(ROOM_TEMPERATURE, this.temperature - 2.5);
-                    level.sendParticles(ParticleTypes.BUBBLE_POP,
-                            neighborPos.getX() + 0.5, neighborPos.getY() + 0.5, neighborPos.getZ() + 0.5,
-                            3, 0.2, 0.2, 0.2, 0.05);
-                }
-            }
+        // Nadwyżka temperatury powyżej 100°C (373.15 K)
+        double excessHeat = temperature - BOILING_POINT;
+
+        // Woda przejmuje w tym ticku tylko 20% nadwyżki ciepła (zapobiega skakaniu temperatury)
+        double heatToTransfer = excessHeat * WATER_COOLING_FACTOR;
+
+        // Obliczamy ile mB wody potrzeba, aby odebrać tę porcję ciepła
+        int desiredWaterToBoil = (int) Math.ceil(heatToTransfer / COOLING_PER_WATER_MB);
+
+        int maxWaterToBoil = Math.min(
+                waterTank.getFluidAmount(),
+                Math.min(MAX_WATER_PER_TICK, desiredWaterToBoil)
+        );
+
+        if (maxWaterToBoil <= 0) {
+            return;
+        }
+
+        // Sprawdzamy ile pary zmieści się w zbiorniku
+        long requestedSteam = (long) maxWaterToBoil * steamRatio;
+
+        ChemicalStack simulatedRemainder = steamTank.insert(
+                new ChemicalStack(MekanismChemicals.STEAM, requestedSteam),
+                Action.SIMULATE,
+                AutomationType.INTERNAL
+        );
+
+        long acceptedSteam = Math.max(0, requestedSteam - simulatedRemainder.getAmount());
+
+        int actualWaterToBoil = (int) Math.min(
+                maxWaterToBoil,
+                acceptedSteam / steamRatio
+        );
+
+        if (actualWaterToBoil <= 0) {
+            return;
+        }
+
+        // Pobieramy wodę
+        FluidStack drainedWater = waterTank.drain(
+                actualWaterToBoil,
+                IFluidHandler.FluidAction.EXECUTE
+        );
+
+        if (drainedWater.isEmpty()) {
+            return;
+        }
+
+        // Produkujemy parę
+        long actualSteamToInsert = (long) drainedWater.getAmount() * steamRatio;
+        steamTank.insert(
+                new ChemicalStack(MekanismChemicals.STEAM, actualSteamToInsert),
+                Action.EXECUTE,
+                AutomationType.INTERNAL
+        );
+
+        // Odbieramy dokładnie tyle ciepła, ile faktycznie pochłonęła woda (ale nie więcej niż heatToTransfer)
+        double actualCooling = Math.min(
+                heatToTransfer,
+                drainedWater.getAmount() * COOLING_PER_WATER_MB
+        );
+
+        temperature = Math.max(BOILING_POINT, temperature - actualCooling);
+
+        if (level.random.nextFloat() < 0.25f) {
+            level.sendParticles(
+                    ParticleTypes.BUBBLE_POP,
+                    pos.getX() + 0.5,
+                    pos.getY() + 1.1,
+                    pos.getZ() + 0.5,
+                    2,
+                    0.1, 0.1, 0.1,
+                    0.05
+            );
         }
 
         setChanged();
     }
 
     private void pushSteam(ServerLevel level, BlockPos pos) {
-        if (steamTank.isEmpty()) return;
+        if (steamTank.isEmpty()) {
+            return;
+        }
 
         for (Direction dir : Direction.values()) {
-            if (steamTank.isEmpty()) break;
-
-            BlockPos neighborPos = pos.relative(dir);
-            if (level.getBlockEntity(neighborPos) instanceof EnrichedUraniumBlockEntity) {
-                continue; // Pionowy przepływ między uranem obsługuje balanceVerticalChannel
+            if (steamTank.isEmpty()) {
+                break;
             }
 
-            IChemicalHandler neighborHandler = level.getCapability(Capabilities.CHEMICAL.block(), neighborPos, dir.getOpposite());
+            BlockPos neighborPos = pos.relative(dir);
 
-            if (neighborHandler != null) {
-                long amountToPush = Math.min(steamTank.getStack().getAmount(), 1000);
-                ChemicalStack stackToPush = new ChemicalStack(MekanismChemicals.STEAM, amountToPush);
+            if (dir.getAxis().isVertical()
+                    && level.getBlockEntity(neighborPos) instanceof EnrichedUraniumBlockEntity) {
+                continue;
+            }
 
-                ChemicalStack remainder = neighborHandler.insertChemical(stackToPush, Action.EXECUTE);
+            IChemicalHandler neighborHandler = level.getCapability(
+                    Capabilities.CHEMICAL.block(),
+                    neighborPos,
+                    dir.getOpposite()
+            );
 
-                long inserted = amountToPush - remainder.getAmount();
-                if (inserted > 0) {
-                    steamTank.extract(inserted, Action.EXECUTE, AutomationType.INTERNAL);
-                }
+            if (neighborHandler == null) {
+                continue;
+            }
+
+            long available = steamTank.getStack().getAmount();
+            if (available <= 0) {
+                break;
+            }
+
+            ChemicalStack offeredStack = new ChemicalStack(
+                    MekanismChemicals.STEAM,
+                    available
+            );
+
+            ChemicalStack remainder = neighborHandler.insertChemical(
+                    offeredStack,
+                    Action.EXECUTE
+            );
+
+            long inserted = available - remainder.getAmount();
+
+            if (inserted > 0) {
+                steamTank.extract(
+                        inserted,
+                        Action.EXECUTE,
+                        AutomationType.INTERNAL
+                );
             }
         }
     }
@@ -237,7 +371,6 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
                 pos.getZ() + 0.5, 45.0f, true,
                 Level.ExplosionInteraction.TNT);
 
-        // Fala uderzeniowa
         NuclearShockwaveManager.create(level, Vec3.atCenterOf(pos));
 
         int newNeutrons = 5000 + level.random.nextInt(5000);
@@ -296,6 +429,7 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putDouble("Temperature", this.temperature);
+        tag.putDouble("HeatBuffer", this.heatBuffer);
         tag.put("WaterTank", waterTank.writeToNBT(registries, new CompoundTag()));
         tag.put("SteamTank", steamTank.serializeNBT(registries));
     }
@@ -305,6 +439,9 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
         super.loadAdditional(tag, registries);
         if (tag.contains("Temperature")) {
             this.temperature = tag.getDouble("Temperature");
+        }
+        if (tag.contains("HeatBuffer")) {
+            this.heatBuffer = tag.getDouble("HeatBuffer");
         }
         if (tag.contains("WaterTank")) {
             waterTank.readFromNBT(registries, tag.getCompound("WaterTank"));

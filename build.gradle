@@ -119,7 +119,7 @@ repositories {
 }
 
 dependencies {
-    // Format: maven.modrinth:<slug_moda>:<wersja>
+    // Mekanism
     implementation "maven.modrinth:mekanism:10.7.19.85"
 }
 
