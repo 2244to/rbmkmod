@@ -11,7 +11,26 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class ControlRodBlockEntity extends BlockEntity {
     private ControlRodMode mode = ControlRodMode.RETRACTED;
+    private int autoScramTemp = 1500;
+    private boolean autoScramEnabled = false;
 
+    public int getAutoScramTemp() {
+        return autoScramTemp;
+    }
+
+    public void setAutoScramTemp(int temp) {
+        this.autoScramTemp = Math.max(300, Math.min(2400, temp));
+        setChanged();
+    }
+
+    public boolean isAutoScramEnabled() {
+        return autoScramEnabled;
+    }
+
+    public void setAutoScramEnabled(boolean enabled) {
+        this.autoScramEnabled = enabled;
+        setChanged();
+    }
     public ControlRodBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.CONTROL_ROD.get(), pos, blockState);
     }

@@ -23,7 +23,7 @@ public class ModNetworking {
                 })
         );
 
-        // Synchronizacja suwaków z klienta do serwera
+        // Synchronizacja suwaków i przełącznika Auto AZ-5 z klienta do serwera
         registrar.playToServer(
                 SetPanelSettingPayload.TYPE,
                 SetPanelSettingPayload.STREAM_CODEC,
@@ -33,11 +33,18 @@ public class ModNetworking {
                             menu.getBlockEntity().setGraphitePercent((int) payload.value());
                         } else if (payload.settingId() == 1) {
                             menu.getBlockEntity().setZoomFactor(payload.value());
+                        } else if (payload.settingId() == 2) {
+                            // Suwak temperatury maksymalnej do Auto AZ-5
+                            menu.getBlockEntity().setAutoScramTemp(Math.round(payload.value()));
+                        } else if (payload.settingId() == 3) {
+                            // Przycisk włączania/wyłączania Auto AZ-5
+                            menu.getBlockEntity().setAutoScramEnabled(payload.value() >= 0.5f);
                         }
                     }
                 })
         );
-        // Wewnątrz metody register() w ModNetworking.java dodaj:
+
+        // Przełączanie pojedynczej kolumny prętów z mapy
         registrar.playToServer(
                 ToggleRodModePayload.TYPE,
                 ToggleRodModePayload.STREAM_CODEC,

@@ -108,9 +108,9 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
         return switch (ch.type()) {
             case FUEL -> {
                 double temp = ch.temperatureC();
-                if (temp > 1000) yield 0xFFFF2222;
-                if (temp > 400) yield 0xFFFF8800;
-                if (temp > 100) yield 0xFFFFEE00;
+                if (temp > 1200) yield 0xFFFF2222;
+                if (temp > 500) yield 0xFFFF8800;
+                if (temp > 150) yield 0xFFFFEE00;
                 yield 0xFF00FF55;
             }
             case CONTROL_ROD -> switch (ch.rodMode()) {

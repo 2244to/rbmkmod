@@ -19,6 +19,7 @@ public record SetPanelSettingPayload(int settingId, float value) implements Cust
                     SetPanelSettingPayload::new
             );
 
+
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;

@@ -29,6 +29,10 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     private int graphitePercent = 100;
     private float zoomFactor = 1.0f;
 
+    // Nowe pola dla automatycznego wyłączenia awaryjnego (Auto AZ-5)
+    private int autoScramTemp = 1500;
+    private boolean autoScramEnabled = false;
+
     private List<CoreChannelData> clientSyncedChannels = new ArrayList<>();
 
     public ControlPanelBlockEntity(BlockPos pos, BlockState blockState) {
@@ -52,8 +56,43 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     public static void serverTick(Level level, BlockPos pos, BlockState state, ControlPanelBlockEntity blockEntity) {
         if (level.getGameTime() % 2 == 0) {
             blockEntity.clientSyncedChannels = blockEntity.scanCoreChannelsForY(blockEntity.selectedYOffset);
+
+            // Automatyczny AZ-5: jeśli funkcja jest włączona i paliwo przekroczy limit temperatury
+            if (blockEntity.autoScramEnabled && blockEntity.isAnyFuelOverheating()) {
+                blockEntity.triggerAz5();
+            }
+
             level.sendBlockUpdated(pos, state, state, 3);
         }
+    }
+
+    /**
+     * Sprawdza, czy którykolwiek blok paliwowy w zasięgu panelu osiągnął temperaturę alarmową.
+     */
+    public boolean isAnyFuelOverheating() {
+        if (level == null) return false;
+
+        // 1. Szybkie sprawdzenie aktualnie wyświetlanej warstwy Y
+        for (CoreChannelData ch : clientSyncedChannels) {
+            if (ch.type() == CoreChannelData.Type.FUEL && ch.temperatureC() >= autoScramTemp) {
+                return true;
+            }
+        }
+
+        // 2. Sprawdzenie pozostałych warstw Y w rdzeniu
+        int radius = Config.PANEL_SCAN_RADIUS.get();
+        int radiusSq = radius * radius;
+        for (BlockPos p : BlockPos.betweenClosed(
+                worldPosition.offset(-radius, -radius, -radius),
+                worldPosition.offset(radius, radius, radius))) {
+            if (worldPosition.distSqr(p) <= radiusSq && level.getBlockEntity(p) instanceof EnrichedUraniumBlockEntity u) {
+                double tempC = u.getTemperature() - 273.15;
+                if (tempC >= autoScramTemp) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public List<CoreChannelData> getClientSyncedChannels() {
@@ -85,6 +124,19 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
 
     public float getZoomFactor() { return zoomFactor; }
     public void setZoomFactor(float zoom) { this.zoomFactor = Math.max(1.0f, Math.min(3.0f, zoom)); setChanged(); }
+
+    // Gettery i settery dla Auto AZ-5
+    public int getAutoScramTemp() { return autoScramTemp; }
+    public void setAutoScramTemp(int temp) {
+        this.autoScramTemp = Math.max(300, Math.min(2400, temp));
+        setChanged();
+    }
+
+    public boolean isAutoScramEnabled() { return autoScramEnabled; }
+    public void setAutoScramEnabled(boolean enabled) {
+        this.autoScramEnabled = enabled;
+        setChanged();
+    }
 
     public void toggleSingleRodMode(BlockPos pos, boolean reverse) {
         if (level == null) return;
@@ -164,6 +216,8 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         tag.putInt("SelectedYOffset", selectedYOffset);
         tag.putInt("GraphitePercent", graphitePercent);
         tag.putFloat("ZoomFactor", zoomFactor);
+        tag.putInt("AutoScramTemp", autoScramTemp);
+        tag.putBoolean("AutoScramEnabled", autoScramEnabled);
 
         ListTag list = new ListTag();
         for (CoreChannelData ch : clientSyncedChannels) {
@@ -185,6 +239,8 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         if (tag.contains("SelectedYOffset")) this.selectedYOffset = tag.getInt("SelectedYOffset");
         if (tag.contains("GraphitePercent")) this.graphitePercent = tag.getInt("GraphitePercent");
         if (tag.contains("ZoomFactor")) this.zoomFactor = tag.getFloat("ZoomFactor");
+        if (tag.contains("AutoScramTemp")) this.autoScramTemp = tag.getInt("AutoScramTemp");
+        if (tag.contains("AutoScramEnabled")) this.autoScramEnabled = tag.getBoolean("AutoScramEnabled");
 
         if (tag.contains("SyncedChannels")) {
             ListTag list = tag.getList("SyncedChannels", Tag.TAG_COMPOUND);

@@ -13,22 +13,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu> {
+    private static final int MIN_SCRAM_TEMP = 300;
+    private static final int MAX_SCRAM_TEMP = 2400;
+
     private List<CoreChannelData> syncedChannels = new ArrayList<>();
     private int currentYOffset = 0;
     private int graphitePercent = 100;
     private float zoomFactor = 1.0f;
 
+    // Nowe pola do automatycznego wyłączenia awaryjnego (Auto AZ-5)
+    private int autoScramTemp = 1500;
+    private boolean autoScramEnabled = false;
+
     private ModSlider graphiteSlider;
     private ModSlider zoomSlider;
+    private ModSlider scramTempSlider;
+    private Button autoScramButton;
 
     public ControlPanelScreen(ControlPanelMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 280;
-        this.imageHeight = 230;
+        this.imageHeight = 256; // Powiększone miejsce na suwak i przycisk Auto AZ-5
         if (menu.getBlockEntity() != null) {
             this.graphitePercent = menu.getBlockEntity().getGraphitePercent();
             this.currentYOffset = menu.getBlockEntity().getSelectedYOffset();
             this.zoomFactor = menu.getBlockEntity().getZoomFactor();
+            this.autoScramTemp = menu.getBlockEntity().getAutoScramTemp();
+            this.autoScramEnabled = menu.getBlockEntity().isAutoScramEnabled();
         }
     }
 
@@ -43,6 +54,21 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         }
         if (zoomSlider != null && !zoomSlider.isDragging()) {
             zoomSlider.setSliderValue((zoomFactor - 1.0f) / 2.0f);
+        }
+    }
+
+    // Przeciążona metoda, jeśli chcesz również synchronizować stan Auto-SCRAM z serwera w pakiecie
+    public void updateChannels(List<CoreChannelData> channels, int yOffset, int graphitePercent, float zoomFactor, int autoScramTemp, boolean autoScramEnabled) {
+        updateChannels(channels, yOffset, graphitePercent, zoomFactor);
+        this.autoScramTemp = autoScramTemp;
+        this.autoScramEnabled = autoScramEnabled;
+
+        if (scramTempSlider != null && !scramTempSlider.isDragging()) {
+            double norm = (double) (autoScramTemp - MIN_SCRAM_TEMP) / (MAX_SCRAM_TEMP - MIN_SCRAM_TEMP);
+            scramTempSlider.setSliderValue(norm);
+        }
+        if (autoScramButton != null) {
+            autoScramButton.setMessage(getAutoScramButtonText());
         }
     }
 
@@ -85,22 +111,58 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         this.addRenderableWidget(this.zoomSlider);
 
         this.addRenderableWidget(Button.builder(Component.literal("Y +1"), b -> sendButton(3))
-                .bounds(x + 12, y + 76, 38, 18).build());
+                .bounds(x + 12, y + 74, 38, 16).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Y -1"), b -> sendButton(4))
-                .bounds(x + 54, y + 76, 38, 18).build());
+                .bounds(x + 54, y + 74, 38, 16).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Wysuń"), b -> sendButton(0))
-                .bounds(x + 12, y + 110, 80, 18).build());
+                .bounds(x + 12, y + 104, 80, 16).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Grafit"), b -> sendButton(1))
-                .bounds(x + 12, y + 130, 80, 18).build());
+                .bounds(x + 12, y + 122, 80, 16).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("Bor"), b -> sendButton(2))
-                .bounds(x + 12, y + 150, 80, 18).build());
+                .bounds(x + 12, y + 140, 80, 16).build());
 
         this.addRenderableWidget(Button.builder(Component.literal("§c§lAZ-5 (SCRAM)"), b -> sendButton(5))
-                .bounds(x + 12, y + 174, 80, 20).build());
+                .bounds(x + 12, y + 158, 80, 18).build());
+
+        // NOWY SUWAK: Maksymalna temperatura paliwa do awaryjnego wyłączenia
+        double initialScramTempVal = (double) (this.autoScramTemp - MIN_SCRAM_TEMP) / (MAX_SCRAM_TEMP - MIN_SCRAM_TEMP);
+        initialScramTempVal = Math.max(0.0, Math.min(1.0, initialScramTempVal));
+
+        this.scramTempSlider = new ModSlider(x + 12, y + 180, 80, 18, initialScramTempVal) {
+            @Override
+            protected void updateMessage() {
+                int rawTemp = MIN_SCRAM_TEMP + (int) Math.round(this.value * (MAX_SCRAM_TEMP - MIN_SCRAM_TEMP));
+                int roundedTemp = (rawTemp / 10) * 10; // Zaokrąglanie co 10°C
+                setMessage(Component.literal("Max T: " + roundedTemp + "°C"));
+            }
+
+            @Override
+            protected void applyValue() {
+                int rawTemp = MIN_SCRAM_TEMP + (int) Math.round(this.value * (MAX_SCRAM_TEMP - MIN_SCRAM_TEMP));
+                autoScramTemp = (rawTemp / 10) * 10;
+                // ID 2 = ustawienie temperatury alarmowej Auto-SCRAM
+                PacketDistributor.sendToServer(new SetPanelSettingPayload(2, (float) autoScramTemp));
+            }
+        };
+        this.addRenderableWidget(this.scramTempSlider);
+
+        // NOWY PRZYCISK: Włącznik / wyłącznik automatycznego wyłączenia awaryjnego
+        this.autoScramButton = Button.builder(getAutoScramButtonText(), b -> {
+            this.autoScramEnabled = !this.autoScramEnabled;
+            b.setMessage(getAutoScramButtonText());
+            // Wysyłamy zarówno przez handleInventoryButtonClick(6), jak i SetPanelSettingPayload(3)
+            sendButton(6);
+            PacketDistributor.sendToServer(new SetPanelSettingPayload(3, this.autoScramEnabled ? 1.0f : 0.0f));
+        }).bounds(x + 12, y + 200, 80, 18).build();
+        this.addRenderableWidget(this.autoScramButton);
+    }
+
+    private Component getAutoScramButtonText() {
+        return Component.literal("Auto AZ-5: " + (this.autoScramEnabled ? "§aWŁ" : "§cWYŁ"));
     }
 
     private void sendButton(int id) {
@@ -117,7 +179,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         int mapX = x + 100;
         int mapY = y + 26;
         int mapW = 170;
-        int mapH = 192;
+        int mapH = 218;
         float mapCenterX = mapX + mapW / 2.0f;
         float mapCenterY = mapY + mapH / 2.0f;
 
@@ -182,7 +244,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         int mapX = x + 100;
         int mapY = y + 26;
         int mapW = 170;
-        int mapH = 192;
+        int mapH = 218;
 
         guiGraphics.fill(mapX, mapY, mapX + mapW, mapY + mapH, 0xFF0A0D0A);
         guiGraphics.renderOutline(mapX, mapY, mapW, mapH, 0xFF00AA55);
@@ -204,9 +266,9 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         guiGraphics.drawString(this.font, "SYSTEM SKALA - MONIT RBMK", x + 12, y + 8, 0x00FF55, false);
 
         String yText = "Poziom Y: " + (currentYOffset >= 0 ? "+" : "") + currentYOffset;
-        guiGraphics.drawString(this.font, yText, x + 12, y + 65, 0xFFFF55, false);
+        guiGraphics.drawString(this.font, yText, x + 12, y + 64, 0xFFFF55, false);
 
-        guiGraphics.drawString(this.font, "PRĘTY STERUJĄCE", x + 12, y + 98, 0xAAAAAA, false);
+        guiGraphics.drawString(this.font, "PRĘTY STERUJĄCE", x + 12, y + 93, 0xAAAAAA, false);
 
         // Podsumowanie telemetrii na dole po lewej
         double maxTemp = 20.0;
@@ -217,14 +279,17 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
                 if (ch.temperatureC() > maxTemp) maxTemp = ch.temperatureC();
             }
         }
-        int tempColor = maxTemp > 1000 ? 0xFF3333 : (maxTemp > 400 ? 0xFFAA00 : 0x00FF55);
-        guiGraphics.drawString(this.font, String.format("T max: %.0f°C", maxTemp), x + 12, y + 198, tempColor, false);
-        guiGraphics.drawString(this.font, "Paliwo: " + fuelCount, x + 12, y + 210, 0xAAAAAA, false);
+        int tempColor = (autoScramEnabled && maxTemp >= autoScramTemp) || maxTemp > 1200
+                ? 0xFF3333
+                : (maxTemp > 500 ? 0xFFAA00 : 0x00FF55);
+
+        guiGraphics.drawString(this.font, String.format("T max: %.0f°C", maxTemp), x + 12, y + 224, tempColor, false);
+        guiGraphics.drawString(this.font, "Paliwo: " + fuelCount, x + 12, y + 236, 0xAAAAAA, false);
 
         int mapX = x + 100;
         int mapY = y + 26;
         int mapW = 170;
-        int mapH = 192;
+        int mapH = 218;
         float mapCenterX = mapX + mapW / 2.0f;
         float mapCenterY = mapY + mapH / 2.0f;
 
@@ -308,9 +373,9 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         return switch (ch.type()) {
             case FUEL -> {
                 double temp = ch.temperatureC();
-                if (temp > 1000) yield 0xFFFF2222;
-                if (temp > 400) yield 0xFFFF8800;
-                if (temp > 100) yield 0xFFFFEE00;
+                if (temp > 1750) yield 0xFFFF2222;
+                if (temp > 1000) yield 0xFFFF8800;
+                if (temp > 500) yield 0xFFFFEE00;
                 yield 0xFF00FF55;
             }
             case CONTROL_ROD -> switch (ch.rodMode()) {
