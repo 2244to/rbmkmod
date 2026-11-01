@@ -1,0 +1,34 @@
+{
+  "creativetab.rbmkmod.rbmk_tab": "RBMK-Reaktor",
+
+  "item.rbmkmod.graphite": "Graphit",
+  "item.rbmkmod.uranium_ingot": "Uranbarren",
+  "item.rbmkmod.enriched_uranium": "Angereichertes Uran",
+  "item.rbmkmod.boron_ingot": "Borbarren",
+  "item.rbmkmod.beryllium_ingot": "Berylliumbarren",
+
+  "item.rbmkmod.raw_uranium": "Rohuran",
+  "item.rbmkmod.raw_boron": "Rohbor",
+  "item.rbmkmod.raw_beryllium": "Rohberyllium",
+
+  "item.rbmkmod.neutron_gun": "Neutronenkanone",
+
+  "block.rbmkmod.graphite_block": "Graphitblock",
+  "block.rbmkmod.purified_graphite_block": "Gereinigter Graphitblock",
+
+  "block.rbmkmod.uranium_ore": "Uranerz",
+  "block.rbmkmod.deepslate_uranium_ore": "Tiefenschiefer-Uranerz",
+  "block.rbmkmod.uranium_block": "Uranblock",
+  "block.rbmkmod.enriched_uranium_block": "Angereicherter Uranblock",
+
+  "block.rbmkmod.boron_ore": "Borerz",
+  "block.rbmkmod.deepslate_boron_ore": "Tiefenschiefer-Borerz",
+  "block.rbmkmod.boron_block": "Borblock",
+
+  "block.rbmkmod.beryllium_ore": "Berylliumerz",
+  "block.rbmkmod.deepslate_beryllium_ore": "Tiefenschiefer-Berylliumerz",
+  "block.rbmkmod.beryllium_block": "Berylliumblock",
+
+  "block.rbmkmod.control_rod": "Steuerstab",
+  "block.rbmkmod.control_panel": "SKALA-Pult"
+}

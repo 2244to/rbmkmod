@@ -1,0 +1,34 @@
+{
+  "creativetab.rbmkmod.rbmk_tab": "Réacteur RBMK",
+
+  "item.rbmkmod.graphite": "Graphite",
+  "item.rbmkmod.uranium_ingot": "Lingot d'uranium",
+  "item.rbmkmod.enriched_uranium": "Uranium enrichi",
+  "item.rbmkmod.boron_ingot": "Lingot de bore",
+  "item.rbmkmod.beryllium_ingot": "Lingot de béryllium",
+
+  "item.rbmkmod.raw_uranium": "Uranium brut",
+  "item.rbmkmod.raw_boron": "Bore brut",
+  "item.rbmkmod.raw_beryllium": "Béryllium brut",
+
+  "item.rbmkmod.neutron_gun": "Canon à neutrons",
+
+  "block.rbmkmod.graphite_block": "Bloc de graphite",
+  "block.rbmkmod.purified_graphite_block": "Bloc de graphite purifié",
+
+  "block.rbmkmod.uranium_ore": "Minerai d'uranium",
+  "block.rbmkmod.deepslate_uranium_ore": "Minerai d'uranium des abîmes",
+  "block.rbmkmod.uranium_block": "Bloc d'uranium",
+  "block.rbmkmod.enriched_uranium_block": "Bloc d'uranium enrichi",
+
+  "block.rbmkmod.boron_ore": "Minerai de bore",
+  "block.rbmkmod.deepslate_boron_ore": "Minerai de bore des abîmes",
+  "block.rbmkmod.boron_block": "Bloc de bore",
+
+  "block.rbmkmod.beryllium_ore": "Minerai de béryllium",
+  "block.rbmkmod.deepslate_beryllium_ore": "Minerai de béryllium des abîmes",
+  "block.rbmkmod.beryllium_block": "Bloc de béryllium",
+
+  "block.rbmkmod.control_rod": "Barre de contrôle",
+  "block.rbmkmod.control_panel": "Panneau de commande SKALA"
+}

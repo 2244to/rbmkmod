@@ -1,35 +1,34 @@
-
 {
-"creativetab.rbmkmod.rbmk_tab": "Reaktor RBMK",
+  "creativetab.rbmkmod.rbmk_tab": "RBMK Reactor",
 
-"item.rbmkmod.graphite": "Grafit",
-"item.rbmkmod.uranium_ingot": "Sztabka uranu",
-"item.rbmkmod.enriched_uranium": "Wzbogacony uran",
-"item.rbmkmod.boron_ingot": "Sztabka boru",
-"item.rbmkmod.beryllium_ingot": "Sztabka berylu",
+  "item.rbmkmod.graphite": "Graphite",
+  "item.rbmkmod.uranium_ingot": "Uranium Ingot",
+  "item.rbmkmod.enriched_uranium": "Enriched Uranium",
+  "item.rbmkmod.boron_ingot": "Boron Ingot",
+  "item.rbmkmod.beryllium_ingot": "Beryllium Ingot",
 
-"item.rbmkmod.raw_uranium": "Surowy uran",
-"item.rbmkmod.raw_boron": "Surowy bor",
-"item.rbmkmod.raw_beryllium": "Surowy beryl",
+  "item.rbmkmod.raw_uranium": "Raw Uranium",
+  "item.rbmkmod.raw_boron": "Raw Boron",
+  "item.rbmkmod.raw_beryllium": "Raw Beryllium",
 
-"item.rbmkmod.neutron_gun": "Działo neutronowe",
+  "item.rbmkmod.neutron_gun": "Neutron Gun",
 
-"block.rbmkmod.graphite_block": "Blok grafitu",
-"block.rbmkmod.purified_graphite_block": "Blok oczyszczonego grafitu",
+  "block.rbmkmod.graphite_block": "Graphite Block",
+  "block.rbmkmod.purified_graphite_block": "Purified Graphite Block",
 
-"block.rbmkmod.uranium_ore": "Ruda uranu",
-"block.rbmkmod.deepslate_uranium_ore": "Łupkowa ruda uranu",
-"block.rbmkmod.uranium_block": "Blok uranu",
-"block.rbmkmod.enriched_uranium_block": "Blok wzbogaconego uranu",
+  "block.rbmkmod.uranium_ore": "Uranium Ore",
+  "block.rbmkmod.deepslate_uranium_ore": "Deepslate Uranium Ore",
+  "block.rbmkmod.uranium_block": "Block of Uranium",
+  "block.rbmkmod.enriched_uranium_block": "Block of Enriched Uranium",
 
-"block.rbmkmod.boron_ore": "Ruda boru",
-"block.rbmkmod.deepslate_boron_ore": "Łupkowa ruda boru",
-"block.rbmkmod.boron_block": "Blok boru",
+  "block.rbmkmod.boron_ore": "Boron Ore",
+  "block.rbmkmod.deepslate_boron_ore": "Deepslate Boron Ore",
+  "block.rbmkmod.boron_block": "Block of Boron",
 
-"block.rbmkmod.beryllium_ore": "Ruda berylu",
-"block.rbmkmod.deepslate_beryllium_ore": "Łupkowa ruda berylu",
-"block.rbmkmod.beryllium_block": "Blok berylu",
+  "block.rbmkmod.beryllium_ore": "Beryllium Ore",
+  "block.rbmkmod.deepslate_beryllium_ore": "Deepslate Beryllium Ore",
+  "block.rbmkmod.beryllium_block": "Block of Beryllium",
 
-"block.rbmkmod.control_rod": "Pręt sterujący",
-"block.rbmkmod.control_panel": "Pulpit sterowniczy SKALA"
+  "block.rbmkmod.control_rod": "Control Rod",
+  "block.rbmkmod.control_panel": "SKALA Control Panel"
 }
