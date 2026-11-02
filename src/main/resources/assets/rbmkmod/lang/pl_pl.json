@@ -1,67 +1,63 @@
 {
-
   "creativetab.rbmkmod.rbmk_tab": "Reaktor RBMK",
 
-
-
   "item.rbmkmod.graphite": "Grafit",
-
   "item.rbmkmod.uranium_ingot": "Sztabka uranu",
-
   "item.rbmkmod.enriched_uranium": "Wzbogacony uran",
-
   "item.rbmkmod.boron_ingot": "Sztabka boru",
-
   "item.rbmkmod.beryllium_ingot": "Sztabka berylu",
 
-
-
   "item.rbmkmod.raw_uranium": "Surowy uran",
-
   "item.rbmkmod.raw_boron": "Surowy bor",
-
   "item.rbmkmod.raw_beryllium": "Surowy beryl",
-
-
 
   "item.rbmkmod.neutron_gun": "Działo neutronowe",
 
-
-
   "block.rbmkmod.graphite_block": "Blok grafitu",
-
-  "block.rbmkmod.purified_graphite_block": "Blok oczyszczonego grafitu",
-
-
+  "block.rbmkmod.purified_graphite_block": "Oczyszczony blok grafitu",
 
   "block.rbmkmod.uranium_ore": "Ruda uranu",
-
   "block.rbmkmod.deepslate_uranium_ore": "Łupkowa ruda uranu",
-
   "block.rbmkmod.uranium_block": "Blok uranu",
-
   "block.rbmkmod.enriched_uranium_block": "Blok wzbogaconego uranu",
 
-
-
   "block.rbmkmod.boron_ore": "Ruda boru",
-
   "block.rbmkmod.deepslate_boron_ore": "Łupkowa ruda boru",
-
   "block.rbmkmod.boron_block": "Blok boru",
 
-
-
   "block.rbmkmod.beryllium_ore": "Ruda berylu",
-
   "block.rbmkmod.deepslate_beryllium_ore": "Łupkowa ruda berylu",
-
   "block.rbmkmod.beryllium_block": "Blok berylu",
 
+  "block.rbmkmod.control_rod": "Pręt kontrolny",
+  "block.rbmkmod.control_panel": "Pulpit sterowniczy SKALA",
 
+  "gui.rbmkmod.control_panel.header": "SYSTEM SKALA - MONIT RBMK",
+  "gui.rbmkmod.control_panel.graphite_slider": "Grafit: %d%%",
+  "gui.rbmkmod.control_panel.zoom_slider": "Zoom: %sx",
+  "gui.rbmkmod.control_panel.y_up": "Y +1",
+  "gui.rbmkmod.control_panel.y_down": "Y -1",
+  "gui.rbmkmod.control_panel.y_level": "Poziom Y: %s",
+  "gui.rbmkmod.control_panel.control_rods_label": "PRĘTY STERUJĄCE",
+  "gui.rbmkmod.control_panel.retract": "Wysuń",
+  "gui.rbmkmod.control_panel.mode_graphite": "Grafit",
+  "gui.rbmkmod.control_panel.mode_boron": "Bor",
+  "gui.rbmkmod.control_panel.scram": "§c§lAZ-5 (SCRAM)",
+  "gui.rbmkmod.control_panel.scram_temp_slider": "Max T: %d°C",
+  "gui.rbmkmod.control_panel.auto_scram_on": "Auto AZ-5: §aWŁ",
+  "gui.rbmkmod.control_panel.auto_scram_off": "Auto AZ-5: §cWYŁ",
+  "gui.rbmkmod.control_panel.max_temp": "T max: %s°C",
+  "gui.rbmkmod.control_panel.fuel_count": "Paliwo: %d",
 
-  "block.rbmkmod.control_rod": "Pręt sterujący",
-
-  "block.rbmkmod.control_panel": "Pulpit sterowniczy SKALA"
-
+  "tooltip.rbmkmod.channel": "§eKanał [%d, Y:%d, %d]",
+  "tooltip.rbmkmod.type.fuel": "§7Typ: §aBlok Paliwowy (Uran)",
+  "tooltip.rbmkmod.temp": "§7Temp: %s°C",
+  "tooltip.rbmkmod.water": "§7Woda: §b%d mB",
+  "tooltip.rbmkmod.steam": "§7Para: §f%d mB",
+  "tooltip.rbmkmod.type.control_rod": "§7Typ: §dPręt Kontrolny (Kolumna)",
+  "tooltip.rbmkmod.mode": "§7Tryb: §f%s",
+  "tooltip.rbmkmod.click_instruction": "§8[Kliknij LPM/PPM, aby przełączyć kolumnę]",
+  "tooltip.rbmkmod.type.graphite": "§7Typ: §8Moderator Grafitowy",
+  "tooltip.rbmkmod.type.beryllium": "§7Typ: §9Reflektor Berylowy",
+  "tooltip.rbmkmod.type.boron": "§7Typ: §5Stały Absorber Borowy"
 }

@@ -30,5 +30,35 @@
   "block.rbmkmod.beryllium_block": "Block of Beryllium",
 
   "block.rbmkmod.control_rod": "Control Rod",
-  "block.rbmkmod.control_panel": "SKALA Control Panel"
+  "block.rbmkmod.control_panel": "SKALA Control Panel",
+  "block.rbmkmod.control_panel_display_name": "SKALA SYSTEM - RBMK MONITOR",
+
+  "gui.rbmkmod.control_panel.header": "SKALA SYSTEM - RBMK MONITOR",
+  "gui.rbmkmod.control_panel.graphite_slider": "Graphite: %d%%",
+  "gui.rbmkmod.control_panel.zoom_slider": "Zoom: %sx",
+  "gui.rbmkmod.control_panel.y_up": "Y +1",
+  "gui.rbmkmod.control_panel.y_down": "Y -1",
+  "gui.rbmkmod.control_panel.y_level": "Y Level: %s",
+  "gui.rbmkmod.control_panel.control_rods_label": "CONTROL RODS",
+  "gui.rbmkmod.control_panel.retract": "Retract",
+  "gui.rbmkmod.control_panel.mode_graphite": "Graphite",
+  "gui.rbmkmod.control_panel.mode_boron": "Boron",
+  "gui.rbmkmod.control_panel.scram": "§c§lAZ-5 (SCRAM)",
+  "gui.rbmkmod.control_panel.scram_temp_slider": "Max T: %d°C",
+  "gui.rbmkmod.control_panel.auto_scram_on": "Auto AZ-5: §aON",
+  "gui.rbmkmod.control_panel.auto_scram_off": "Auto AZ-5: §cOFF",
+  "gui.rbmkmod.control_panel.max_temp": "Max T: %s°C",
+  "gui.rbmkmod.control_panel.fuel_count": "Fuel: %d",
+
+  "tooltip.rbmkmod.channel": "§eChannel [%d, Y:%d, %d]",
+  "tooltip.rbmkmod.type.fuel": "§7Type: §aFuel Assembly (Uranium)",
+  "tooltip.rbmkmod.temp": "§7Temp: %s°C",
+  "tooltip.rbmkmod.water": "§7Water: %d mB",
+  "tooltip.rbmkmod.steam": "§7Steam: %d mB",
+  "tooltip.rbmkmod.type.control_rod": "§7Type: §dControl Rod (Column)",
+  "tooltip.rbmkmod.mode": "§7Mode: %s",
+  "tooltip.rbmkmod.click_instruction": "§8[Left/Right click to toggle column]",
+  "tooltip.rbmkmod.type.graphite": "§7Type: §8Graphite Moderator",
+  "tooltip.rbmkmod.type.beryllium": "§7Type: §9Beryllium Reflector",
+  "tooltip.rbmkmod.type.boron": "§7Type: §5Solid Boron Absorber"
 }

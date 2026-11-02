@@ -273,7 +273,7 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("System SKALA - Mnemokomputer RBMK");
+        return Component.translatable("block.rbmkmod.control_panel_display_name");
     }
 
     @Override

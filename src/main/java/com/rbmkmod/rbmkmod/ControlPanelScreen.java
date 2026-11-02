@@ -83,7 +83,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
             @Override
             protected void updateMessage() {
                 int val = (int) Math.round(this.value * 100.0);
-                setMessage(Component.literal("Grafit: " + val + "%"));
+                setMessage(Component.translatable("gui.rbmkmod.control_panel.graphite_slider", val));
             }
 
             @Override
@@ -99,7 +99,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
             @Override
             protected void updateMessage() {
                 float z = 1.0f + (float) (this.value * 2.0);
-                setMessage(Component.literal(String.format("Zoom: %.1fx", z)));
+                setMessage(Component.translatable("gui.rbmkmod.control_panel.zoom_slider", String.format("%.1f", z)));
             }
 
             @Override
@@ -110,22 +110,22 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         };
         this.addRenderableWidget(this.zoomSlider);
 
-        this.addRenderableWidget(Button.builder(Component.literal("Y +1"), b -> sendButton(3))
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.rbmkmod.control_panel.y_up"), b -> sendButton(3))
                 .bounds(x + 12, y + 74, 38, 16).build());
 
-        this.addRenderableWidget(Button.builder(Component.literal("Y -1"), b -> sendButton(4))
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.rbmkmod.control_panel.y_down"), b -> sendButton(4))
                 .bounds(x + 54, y + 74, 38, 16).build());
 
-        this.addRenderableWidget(Button.builder(Component.literal("Wysuń"), b -> sendButton(0))
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.rbmkmod.control_panel.retract"), b -> sendButton(0))
                 .bounds(x + 12, y + 104, 80, 16).build());
 
-        this.addRenderableWidget(Button.builder(Component.literal("Grafit"), b -> sendButton(1))
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.rbmkmod.control_panel.mode_graphite"), b -> sendButton(1))
                 .bounds(x + 12, y + 122, 80, 16).build());
 
-        this.addRenderableWidget(Button.builder(Component.literal("Bor"), b -> sendButton(2))
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.rbmkmod.control_panel.mode_boron"), b -> sendButton(2))
                 .bounds(x + 12, y + 140, 80, 16).build());
 
-        this.addRenderableWidget(Button.builder(Component.literal("§c§lAZ-5 (SCRAM)"), b -> sendButton(5))
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.rbmkmod.control_panel.scram"), b -> sendButton(5))
                 .bounds(x + 12, y + 158, 80, 18).build());
 
         // NOWY SUWAK: Maksymalna temperatura paliwa do awaryjnego wyłączenia
@@ -137,7 +137,7 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
             protected void updateMessage() {
                 int rawTemp = MIN_SCRAM_TEMP + (int) Math.round(this.value * (MAX_SCRAM_TEMP - MIN_SCRAM_TEMP));
                 int roundedTemp = (rawTemp / 10) * 10; // Zaokrąglanie co 10°C
-                setMessage(Component.literal("Max T: " + roundedTemp + "°C"));
+                setMessage(Component.translatable("gui.rbmkmod.control_panel.scram_temp_slider", roundedTemp));
             }
 
             @Override
@@ -162,7 +162,9 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
     }
 
     private Component getAutoScramButtonText() {
-        return Component.literal("Auto AZ-5: " + (this.autoScramEnabled ? "§aWŁ" : "§cWYŁ"));
+        return this.autoScramEnabled
+                ? Component.translatable("gui.rbmkmod.control_panel.auto_scram_on")
+                : Component.translatable("gui.rbmkmod.control_panel.auto_scram_off");
     }
 
     private void sendButton(int id) {
@@ -263,12 +265,12 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
-        guiGraphics.drawString(this.font, "SYSTEM SKALA - MONIT RBMK", x + 12, y + 8, 0x00FF55, false);
+        guiGraphics.drawString(this.font, Component.translatable("gui.rbmkmod.control_panel.header"), x + 12, y + 8, 0x00FF55, false);
 
-        String yText = "Poziom Y: " + (currentYOffset >= 0 ? "+" : "") + currentYOffset;
-        guiGraphics.drawString(this.font, yText, x + 12, y + 64, 0xFFFF55, false);
+        String yFormatted = (currentYOffset >= 0 ? "+" : "") + currentYOffset;
+        guiGraphics.drawString(this.font, Component.translatable("gui.rbmkmod.control_panel.y_level", yFormatted), x + 12, y + 64, 0xFFFF55, false);
 
-        guiGraphics.drawString(this.font, "PRĘTY STERUJĄCE", x + 12, y + 93, 0xAAAAAA, false);
+        guiGraphics.drawString(this.font, Component.translatable("gui.rbmkmod.control_panel.control_rods_label"), x + 12, y + 93, 0xAAAAAA, false);
 
         // Podsumowanie telemetrii na dole po lewej
         double maxTemp = 20.0;
@@ -284,8 +286,8 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
                 : (maxTemp > 150)  ? (int) 0xFFFFEE00L
                 : (int) 0xFF00FF55L;
 
-        guiGraphics.drawString(this.font, String.format("T max: %.0f°C", maxTemp), x + 12, y + 224, tempColor, false);
-        guiGraphics.drawString(this.font, "Paliwo: " + fuelCount, x + 12, y + 236, 0xAAAAAA, false);
+        guiGraphics.drawString(this.font, Component.translatable("gui.rbmkmod.control_panel.max_temp", String.format("%.0f", maxTemp)), x + 12, y + 224, tempColor, false);
+        guiGraphics.drawString(this.font, Component.translatable("gui.rbmkmod.control_panel.fuel_count", fuelCount), x + 12, y + 236, 0xAAAAAA, false);
 
         int mapX = x + 100;
         int mapY = y + 26;
@@ -345,23 +347,23 @@ public class ControlPanelScreen extends AbstractContainerScreen<ControlPanelMenu
 
         if (hoveredChannel != null) {
             List<Component> tooltip = new ArrayList<>();
-            tooltip.add(Component.literal("§eKanał [" + hoveredChannel.pos().getX() + ", Y:" + hoveredChannel.pos().getY() + ", " + hoveredChannel.pos().getZ() + "]"));
+            tooltip.add(Component.translatable("tooltip.rbmkmod.channel", hoveredChannel.pos().getX(), hoveredChannel.pos().getY(), hoveredChannel.pos().getZ()));
 
             switch (hoveredChannel.type()) {
                 case FUEL -> {
-                    tooltip.add(Component.literal("§7Typ: §aBlok Paliwowy (Uran)"));
-                    tooltip.add(Component.literal("§7Temp: " + String.format("%.1f°C", hoveredChannel.temperatureC())));
-                    tooltip.add(Component.literal("§7Woda: §b" + hoveredChannel.waterMb() + " mB"));
-                    tooltip.add(Component.literal("§7Para: §f" + hoveredChannel.steamMb() + " mB"));
+                    tooltip.add(Component.translatable("tooltip.rbmkmod.type.fuel"));
+                    tooltip.add(Component.translatable("tooltip.rbmkmod.temp", String.format("%.1f", hoveredChannel.temperatureC())));
+                    tooltip.add(Component.translatable("tooltip.rbmkmod.water", hoveredChannel.waterMb()));
+                    tooltip.add(Component.translatable("tooltip.rbmkmod.steam", hoveredChannel.steamMb()));
                 }
                 case CONTROL_ROD -> {
-                    tooltip.add(Component.literal("§7Typ: §dPręt Kontrolny (Kolumna)"));
-                    tooltip.add(Component.literal("§7Tryb: §f" + hoveredChannel.rodMode().getDisplayName()));
-                    tooltip.add(Component.literal("§8[Kliknij LPM/PPM, aby przełączyć kolumnę]"));
+                    tooltip.add(Component.translatable("tooltip.rbmkmod.type.control_rod"));
+                    tooltip.add(Component.translatable("tooltip.rbmkmod.mode", hoveredChannel.rodMode().getDisplayName()));
+                    tooltip.add(Component.translatable("tooltip.rbmkmod.click_instruction"));
                 }
-                case GRAPHITE -> tooltip.add(Component.literal("§7Typ: §8Moderator Grafitowy"));
-                case BERYLLIUM -> tooltip.add(Component.literal("§7Typ: §9Reflektor Berylowy"));
-                case BORON -> tooltip.add(Component.literal("§7Typ: §5Stały Absorber Borowy"));
+                case GRAPHITE -> tooltip.add(Component.translatable("tooltip.rbmkmod.type.graphite"));
+                case BERYLLIUM -> tooltip.add(Component.translatable("tooltip.rbmkmod.type.beryllium"));
+                case BORON -> tooltip.add(Component.translatable("tooltip.rbmkmod.type.boron"));
             }
 
             guiGraphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);

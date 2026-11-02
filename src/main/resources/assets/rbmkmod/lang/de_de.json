@@ -19,7 +19,7 @@
   "block.rbmkmod.uranium_ore": "Uranerz",
   "block.rbmkmod.deepslate_uranium_ore": "Tiefenschiefer-Uranerz",
   "block.rbmkmod.uranium_block": "Uranblock",
-  "block.rbmkmod.enriched_uranium_block": "Angereicherter Uranblock",
+  "block.rbmkmod.enriched_uranium_block": "Block aus angereichertem Uran",
 
   "block.rbmkmod.boron_ore": "Borerz",
   "block.rbmkmod.deepslate_boron_ore": "Tiefenschiefer-Borerz",
@@ -30,5 +30,34 @@
   "block.rbmkmod.beryllium_block": "Berylliumblock",
 
   "block.rbmkmod.control_rod": "Steuerstab",
-  "block.rbmkmod.control_panel": "SKALA-Pult"
+  "block.rbmkmod.control_panel": "SKALA-Bedienfeld",
+
+  "gui.rbmkmod.control_panel.header": "SKALA-SYSTEM - RBMK-MONITOR",
+  "gui.rbmkmod.control_panel.graphite_slider": "Graphit: %d%%",
+  "gui.rbmkmod.control_panel.zoom_slider": "Zoom: %sx",
+  "gui.rbmkmod.control_panel.y_up": "Y +1",
+  "gui.rbmkmod.control_panel.y_down": "Y -1",
+  "gui.rbmkmod.control_panel.y_level": "Y-Ebene: %s",
+  "gui.rbmkmod.control_panel.control_rods_label": "STEUERSTÄBE",
+  "gui.rbmkmod.control_panel.retract": "Einfahren",
+  "gui.rbmkmod.control_panel.mode_graphite": "Graphit",
+  "gui.rbmkmod.control_panel.mode_boron": "Bor",
+  "gui.rbmkmod.control_panel.scram": "§c§lAZ-5 (SCRAM)",
+  "gui.rbmkmod.control_panel.scram_temp_slider": "Max T: %d°C",
+  "gui.rbmkmod.control_panel.auto_scram_on": "Auto AZ-5: §aAN",
+  "gui.rbmkmod.control_panel.auto_scram_off": "Auto AZ-5: §cAUS",
+  "gui.rbmkmod.control_panel.max_temp": "Max T: %s°C",
+  "gui.rbmkmod.control_panel.fuel_count": "Brennstoff: %d",
+
+  "tooltip.rbmkmod.channel": "§eKanal [%d, Y:%d, %d]",
+  "tooltip.rbmkmod.type.fuel": "§7Typ: §aBrennelement (Uran)",
+  "tooltip.rbmkmod.temp": "§7Temp: %s°C",
+  "tooltip.rbmkmod.water": "§7Wasser: §b%d mB",
+  "tooltip.rbmkmod.steam": "§7Dampf: §f%d mB",
+  "tooltip.rbmkmod.type.control_rod": "§7Typ: §dSteuerstab (Säule)",
+  "tooltip.rbmkmod.mode": "§7Modus: §f%s",
+  "tooltip.rbmkmod.click_instruction": "§8[Links-/Rechtsklick zum Umschalten]",
+  "tooltip.rbmkmod.type.graphite": "§7Typ: §8Graphit-Moderator",
+  "tooltip.rbmkmod.type.beryllium": "§7Typ: §9Beryllium-Reflektor",
+  "tooltip.rbmkmod.type.boron": "§7Typ: §5Fester Bor-Absorber"
 }

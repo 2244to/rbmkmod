@@ -17,18 +17,47 @@
   "block.rbmkmod.purified_graphite_block": "Bloc de graphite purifié",
 
   "block.rbmkmod.uranium_ore": "Minerai d'uranium",
-  "block.rbmkmod.deepslate_uranium_ore": "Minerai d'uranium des abîmes",
+  "block.rbmkmod.deepslate_uranium_ore": "Minerai d'uranium d'abîme",
   "block.rbmkmod.uranium_block": "Bloc d'uranium",
   "block.rbmkmod.enriched_uranium_block": "Bloc d'uranium enrichi",
 
   "block.rbmkmod.boron_ore": "Minerai de bore",
-  "block.rbmkmod.deepslate_boron_ore": "Minerai de bore des abîmes",
+  "block.rbmkmod.deepslate_boron_ore": "Minerai de bore d'abîme",
   "block.rbmkmod.boron_block": "Bloc de bore",
 
   "block.rbmkmod.beryllium_ore": "Minerai de béryllium",
-  "block.rbmkmod.deepslate_beryllium_ore": "Minerai de béryllium des abîmes",
+  "block.rbmkmod.deepslate_beryllium_ore": "Minerai de béryllium d'abîme",
   "block.rbmkmod.beryllium_block": "Bloc de béryllium",
 
   "block.rbmkmod.control_rod": "Barre de contrôle",
-  "block.rbmkmod.control_panel": "Panneau de commande SKALA"
+  "block.rbmkmod.control_panel": "Panneau de commande SKALA",
+
+  "gui.rbmkmod.control_panel.header": "SYSTÈME SKALA - MONITEUR RBMK",
+  "gui.rbmkmod.control_panel.graphite_slider": "Graphite : %d%%",
+  "gui.rbmkmod.control_panel.zoom_slider": "Zoom : %sx",
+  "gui.rbmkmod.control_panel.y_up": "Y +1",
+  "gui.rbmkmod.control_panel.y_down": "Y -1",
+  "gui.rbmkmod.control_panel.y_level": "Niveau Y : %s",
+  "gui.rbmkmod.control_panel.control_rods_label": "BARRES DE CONTRÔLE",
+  "gui.rbmkmod.control_panel.retract": "Rétracter",
+  "gui.rbmkmod.control_panel.mode_graphite": "Graphite",
+  "gui.rbmkmod.control_panel.mode_boron": "Bore",
+  "gui.rbmkmod.control_panel.scram": "§c§lAZ-5 (SCRAM)",
+  "gui.rbmkmod.control_panel.scram_temp_slider": "T max : %d°C",
+  "gui.rbmkmod.control_panel.auto_scram_on": "Auto AZ-5 : §aON",
+  "gui.rbmkmod.control_panel.auto_scram_off": "Auto AZ-5 : §cOFF",
+  "gui.rbmkmod.control_panel.max_temp": "T max : %s°C",
+  "gui.rbmkmod.control_panel.fuel_count": "Combustible : %d",
+
+  "tooltip.rbmkmod.channel": "§eCanal [%d, Y:%d, %d]",
+  "tooltip.rbmkmod.type.fuel": "§7Type : §aAssemblage combustible (Uranium)",
+  "tooltip.rbmkmod.temp": "§7Temp : %s°C",
+  "tooltip.rbmkmod.water": "§7Eau : §b%d mB",
+  "tooltip.rbmkmod.steam": "§7Vapeur : §f%d mB",
+  "tooltip.rbmkmod.type.control_rod": "§7Type : §dBarre de contrôle (Colonne)",
+  "tooltip.rbmkmod.mode": "§7Mode : §f%s",
+  "tooltip.rbmkmod.click_instruction": "§8[Clic G/D pour basculer la colonne]",
+  "tooltip.rbmkmod.type.graphite": "§7Type : §8Modérateur en graphite",
+  "tooltip.rbmkmod.type.beryllium": "§7Type : §9Réflecteur en béryllium",
+  "tooltip.rbmkmod.type.boron": "§7Type : §5Absorbeur solide en bore"
 }
