@@ -14,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -27,10 +28,11 @@ import org.jetbrains.annotations.Nullable;
 public class ControlPanelBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final MapCodec<ControlPanelBlock> CODEC = simpleCodec(ControlPanelBlock::new);
 
-    private static final VoxelShape SHAPE_NORTH = Block.box(0, 0, 12, 16, 16, 16);
-    private static final VoxelShape SHAPE_SOUTH = Block.box(0, 0, 0, 16, 16, 4);
-    private static final VoxelShape SHAPE_WEST  = Block.box(12, 0, 0, 16, 16, 16);
-    private static final VoxelShape SHAPE_EAST  = Block.box(0, 0, 0, 4, 16, 16);
+    // Hitboxy 2x2 bloki dla poszczególnych stron
+    private static final VoxelShape SHAPE_NORTH = Block.box(0, 0, 12, 32, 32, 16);
+    private static final VoxelShape SHAPE_SOUTH = Block.box(-16, 0, 0, 16, 32, 4);
+    private static final VoxelShape SHAPE_WEST  = Block.box(12, 0, -16, 16, 32, 16);
+    private static final VoxelShape SHAPE_EAST  = Block.box(0, 0, 0, 4, 32, 32);
 
     public ControlPanelBlock(Properties properties) {
         super(properties);
@@ -43,6 +45,11 @@ public class ControlPanelBlock extends HorizontalDirectionalBlock implements Ent
     }
 
     @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return switch (state.getValue(FACING)) {
             case SOUTH -> SHAPE_SOUTH;
@@ -52,15 +59,9 @@ public class ControlPanelBlock extends HorizontalDirectionalBlock implements Ent
         };
     }
 
-    // Blok NIE JEST pełną kostką – wymusza renderowanie ścianek sąsiadujących bloków
-    @Override
-    public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
-        return false;
-    }
-
     @Override
     public boolean useShapeForLightOcclusion(BlockState state) {
-        return true;
+        return false;
     }
 
     @Override

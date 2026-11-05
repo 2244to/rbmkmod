@@ -3,12 +3,17 @@ package com.rbmkmod.rbmkmod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.joml.Matrix4f;
 
@@ -21,16 +26,15 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
 
     @Override
     public void render(ControlPanelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        List<CoreChannelData> channels = blockEntity.getClientSyncedChannels();
-        if (channels == null || channels.isEmpty()) return;
-
+        BlockState state = blockEntity.getBlockState();
         Direction facing = Direction.NORTH;
-        if (blockEntity.getBlockState().hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-            facing = blockEntity.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+            facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         }
 
         poseStack.pushPose();
 
+        // 1. OBRACANIE WOKÓŁ ŚRODKA BLOKU
         poseStack.translate(0.5f, 0.5f, 0.5f);
         switch (facing) {
             case SOUTH -> poseStack.mulPose(Axis.YP.rotationDegrees(180));
@@ -38,60 +42,91 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
             case EAST  -> poseStack.mulPose(Axis.YP.rotationDegrees(270));
             default    -> {} // NORTH
         }
+        poseStack.translate(-0.5f, -0.5f, -0.5f);
 
-        poseStack.translate(0.0f, 0.0f, -0.502f);
+        // 2. SKALOWANIE MODELU DO 2x2x1
+        poseStack.scale(2.0f, 2.0f, 1.0f);
 
-        VertexConsumer builder = bufferSource.getBuffer(RenderType.debugQuads());
-        Matrix4f matrix = poseStack.last().pose();
+        // 3. RENDEROWANIE MODELU JSON
+        BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
+        BakedModel bakedModel = blockRenderer.getBlockModel(state);
+        VertexConsumer modelConsumer = bufferSource.getBuffer(Sheets.cutoutBlockSheet());
 
-        drawQuad(builder, matrix, -0.50f, -0.50f, 0.000f, 1.00f, 1.00f, 0x0A, 0x0D, 0x0A, 255);
+        blockRenderer.getModelRenderer().renderModel(
+                poseStack.last(),
+                modelConsumer,
+                state,
+                bakedModel,
+                1.0f, 1.0f, 1.0f,
+                packedLight, packedOverlay
+        );
 
-        BlockPos centerPos = blockEntity.getBlockPos();
-        int minRelX = Integer.MAX_VALUE, maxRelX = Integer.MIN_VALUE;
-        int minRelZ = Integer.MAX_VALUE, maxRelZ = Integer.MIN_VALUE;
+        // 4. RENDEROWANIE DIOD NA EKRANIE
+        List<CoreChannelData> channels = blockEntity.getClientSyncedChannels();
+        if (channels != null && !channels.isEmpty()) {
 
-        for (CoreChannelData ch : channels) {
-            int relX = ch.pos().getX() - centerPos.getX();
-            int relZ = ch.pos().getZ() - centerPos.getZ();
-            if (relX < minRelX) minRelX = relX;
-            if (relX > maxRelX) maxRelX = relX;
-            if (relZ < minRelZ) minRelZ = relZ;
-            if (relZ > maxRelZ) maxRelZ = relZ;
-        }
+            poseStack.pushPose();
 
-        int gridW = Math.max(1, maxRelX - minRelX + 1);
-        int gridH = Math.max(1, maxRelZ - minRelZ + 1);
+            // Ustawienie diod na ekranie CRT
+            poseStack.translate(0.3218f, 0.6718f, 0.487f);
 
-        float mapSize = 0.96f;
-        float zoom = blockEntity.getZoomFactor();
-        float cellSize = Math.min(mapSize / gridW, mapSize / gridH) * zoom;
-        cellSize = Math.min(cellSize, 0.20f);
+            VertexConsumer builder = bufferSource.getBuffer(RenderType.debugQuads());
+            Matrix4f matrix = poseStack.last().pose();
 
-        float gap = cellSize >= 0.02f ? 0.004f : 0.0f;
-        float drawSize = Math.max(0.005f, cellSize - gap);
+            BlockPos centerPos = blockEntity.getBlockPos();
+            int minRelX = Integer.MAX_VALUE, maxRelX = Integer.MIN_VALUE;
+            int minRelZ = Integer.MAX_VALUE, maxRelZ = Integer.MIN_VALUE;
 
-        float centerGridX = (minRelX + maxRelX) / 2.0f;
-        float centerGridZ = (minRelZ + maxRelZ) / 2.0f;
-
-        for (CoreChannelData ch : channels) {
-            int relX = ch.pos().getX() - centerPos.getX();
-            int relZ = ch.pos().getZ() - centerPos.getZ();
-
-            float px = (relX - centerGridX) * cellSize - (drawSize / 2.0f);
-            float py = -(relZ - centerGridZ) * cellSize - (drawSize / 2.0f);
-
-            // Przycinanie do ekranu 1x1 bloku przy włączonym zoomie
-            if (px < -0.48f || px + drawSize > 0.48f || py < -0.48f || py + drawSize > 0.48f) {
-                continue;
+            for (CoreChannelData ch : channels) {
+                int relX = ch.pos().getX() - centerPos.getX();
+                int relZ = ch.pos().getZ() - centerPos.getZ();
+                if (relX < minRelX) minRelX = relX;
+                if (relX > maxRelX) maxRelX = relX;
+                if (relZ < minRelZ) minRelZ = relZ;
+                if (relZ > maxRelZ) maxRelZ = relZ;
             }
 
-            int color = getChannelColor(ch);
-            int a = (color >> 24) & 0xFF;
-            int r = (color >> 16) & 0xFF;
-            int g = (color >> 8) & 0xFF;
-            int b = color & 0xFF;
+            int gridW = Math.max(1, maxRelX - minRelX + 1);
+            int gridH = Math.max(1, maxRelZ - minRelZ + 1);
 
-            drawQuad(builder, matrix, px, py, -0.003f, drawSize, drawSize, r, g, b, a);
+            float mapSize = 0.52f;
+            float zoom = blockEntity.getZoomFactor();
+            float cellSize = Math.min(mapSize / gridW, mapSize / gridH) * zoom;
+            cellSize = Math.min(cellSize, 0.12f);
+
+            float gap = cellSize >= 0.02f ? 0.002f : 0.0f;
+            float drawSize = Math.max(0.004f, cellSize - gap);
+
+            float centerGridX = (minRelX + maxRelX) / 2.0f;
+            float centerGridZ = (minRelZ + maxRelZ) / 2.0f;
+
+            float screenMinX = -0.290f;
+            float screenMaxX =  0.290f;
+            float screenMinY = -0.265f;
+            float screenMaxY =  0.265f;
+
+            for (CoreChannelData ch : channels) {
+                int relX = ch.pos().getX() - centerPos.getX();
+                int relZ = ch.pos().getZ() - centerPos.getZ();
+
+                float px = (relX - centerGridX) * cellSize - (drawSize / 2.0f);
+                float py = -(relZ - centerGridZ) * cellSize - (drawSize / 2.0f);
+
+                if (px < screenMinX || (px + drawSize) > screenMaxX ||
+                        py < screenMinY || (py + drawSize) > screenMaxY) {
+                    continue;
+                }
+
+                int color = getChannelColor(ch);
+                int a = (color >> 24) & 0xFF;
+                int r = (color >> 16) & 0xFF;
+                int g = (color >> 8) & 0xFF;
+                int b = color & 0xFF;
+
+                drawQuad(builder, matrix, px, py, -0.001f, drawSize, drawSize, r, g, b, a);
+            }
+
+            poseStack.popPose();
         }
 
         poseStack.popPose();
