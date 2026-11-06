@@ -1,4 +1,8 @@
+
 package com.rbmkmod.rbmkmod;
+
+import mekanism.generators.common.content.turbine.TurbineMultiblockData;
+import mekanism.generators.common.tile.turbine.TileEntityTurbineCasing;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -19,7 +23,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider {
@@ -29,11 +35,14 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     private int graphitePercent = 100;
     private float zoomFactor = 1.0f;
 
-    // Nowe pola dla automatycznego wyłączenia awaryjnego (Auto AZ-5)
+    // Auto AZ-5
     private int autoScramTemp = 1500;
     private boolean autoScramEnabled = false;
 
     private List<CoreChannelData> clientSyncedChannels = new ArrayList<>();
+
+    // Produkcja turbin w kFE/t
+    private double turbineOutputKfe = 0.0;
 
     public ControlPanelBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.CONTROL_PANEL.get(), pos, blockState);
@@ -53,11 +62,16 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         PANELS.remove(this);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, ControlPanelBlockEntity blockEntity) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state,
+                                  ControlPanelBlockEntity blockEntity) {
         if (level.getGameTime() % 2 == 0) {
-            blockEntity.clientSyncedChannels = blockEntity.scanCoreChannelsForY(blockEntity.selectedYOffset);
+            blockEntity.clientSyncedChannels =
+                    blockEntity.scanCoreChannelsForY(blockEntity.selectedYOffset);
 
-            // Automatyczny AZ-5: jeśli funkcja jest włączona i paliwo przekroczy limit temperatury
+            // Aktualizacja produkcji turbin
+            blockEntity.updateTurbineOutput();
+
+            // Automatyczny AZ-5
             if (blockEntity.autoScramEnabled && blockEntity.isAnyFuelOverheating()) {
                 blockEntity.triggerAz5();
             }
@@ -67,31 +81,76 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     }
 
     /**
-     * Sprawdza, czy którykolwiek blok paliwowy w zasięgu panelu osiągnął temperaturę alarmową.
+     * Odczytuje produkcję wszystkich uformowanych turbin w zasięgu panelu.
+     * Każda turbina jest liczona tylko jeden raz.
+     */
+    private void updateTurbineOutput() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+
+        int radius = Config.PANEL_SCAN_RADIUS.get();
+        int radiusSq = radius * radius;
+
+        Set<TurbineMultiblockData> foundTurbines = new HashSet<>();
+        double totalFePerTick = 0.0;
+
+        BlockPos min = worldPosition.offset(-radius, -radius, -radius);
+        BlockPos max = worldPosition.offset(radius, radius, radius);
+
+        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
+            if (worldPosition.distSqr(pos) > radiusSq) {
+                continue;
+            }
+
+            if (level.getBlockEntity(pos) instanceof TileEntityTurbineCasing casing) {
+                TurbineMultiblockData turbine = casing.getMultiblock();
+
+                if (turbine != null && turbine.isFormed() && foundTurbines.add(turbine)) {
+                    totalFePerTick = turbine.getProductionRate();
+                }
+            }
+        }
+
+        // FE/t -> kFE/t
+        turbineOutputKfe = (totalFePerTick / 1000.0)/2.5;
+    }
+
+    public double getTurbineOutputKfe() {
+        return turbineOutputKfe;
+    }
+
+    /**
+     * Sprawdza, czy którykolwiek blok paliwowy osiągnął temperaturę alarmową.
      */
     public boolean isAnyFuelOverheating() {
         if (level == null) return false;
 
-        // 1. Szybkie sprawdzenie aktualnie wyświetlanej warstwy Y
         for (CoreChannelData ch : clientSyncedChannels) {
-            if (ch.type() == CoreChannelData.Type.FUEL && ch.temperatureC() >= autoScramTemp) {
+            if (ch.type() == CoreChannelData.Type.FUEL
+                    && ch.temperatureC() >= autoScramTemp) {
                 return true;
             }
         }
 
-        // 2. Sprawdzenie pozostałych warstw Y w rdzeniu
         int radius = Config.PANEL_SCAN_RADIUS.get();
         int radiusSq = radius * radius;
+
         for (BlockPos p : BlockPos.betweenClosed(
                 worldPosition.offset(-radius, -radius, -radius),
                 worldPosition.offset(radius, radius, radius))) {
-            if (worldPosition.distSqr(p) <= radiusSq && level.getBlockEntity(p) instanceof EnrichedUraniumBlockEntity u) {
+
+            if (worldPosition.distSqr(p) <= radiusSq
+                    && level.getBlockEntity(p) instanceof EnrichedUraniumBlockEntity u) {
+
                 double tempC = u.getTemperature() - 273.15;
+
                 if (tempC >= autoScramTemp) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
@@ -99,10 +158,18 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         return clientSyncedChannels;
     }
 
-    public int getSelectedYOffset() { return selectedYOffset; }
-    public void setSelectedYOffset(int offset) { this.selectedYOffset = Math.max(-50, Math.min(50, offset)); setChanged(); }
+    public int getSelectedYOffset() {
+        return selectedYOffset;
+    }
 
-    public int getGraphitePercent() { return graphitePercent; }
+    public void setSelectedYOffset(int offset) {
+        this.selectedYOffset = Math.max(-50, Math.min(50, offset));
+        setChanged();
+    }
+
+    public int getGraphitePercent() {
+        return graphitePercent;
+    }
 
     public void setGraphitePercent(int percent) {
         int clamped = Math.max(0, Math.min(100, percent));
@@ -110,9 +177,12 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         setChanged();
 
         int radius = Config.PANEL_SCAN_RADIUS.get();
+
         if (level != null && !level.isClientSide()) {
             for (ControlPanelBlockEntity panel : PANELS) {
-                if (panel.getLevel() == level && panel.getBlockPos().closerThan(this.worldPosition, radius)) {
+                if (panel.getLevel() == level
+                        && panel.getBlockPos().closerThan(this.worldPosition, radius)) {
+
                     if (panel.graphitePercent != clamped) {
                         panel.graphitePercent = clamped;
                         panel.setChanged();
@@ -122,17 +192,29 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         }
     }
 
-    public float getZoomFactor() { return zoomFactor; }
-    public void setZoomFactor(float zoom) { this.zoomFactor = Math.max(1.0f, Math.min(3.0f, zoom)); setChanged(); }
+    public float getZoomFactor() {
+        return zoomFactor;
+    }
 
-    // Gettery i settery dla Auto AZ-5
-    public int getAutoScramTemp() { return autoScramTemp; }
+    public void setZoomFactor(float zoom) {
+        this.zoomFactor = Math.max(1.0f, Math.min(3.0f, zoom));
+        setChanged();
+    }
+
+    // Auto AZ-5
+    public int getAutoScramTemp() {
+        return autoScramTemp;
+    }
+
     public void setAutoScramTemp(int temp) {
         this.autoScramTemp = Math.max(300, Math.min(2400, temp));
         setChanged();
     }
 
-    public boolean isAutoScramEnabled() { return autoScramEnabled; }
+    public boolean isAutoScramEnabled() {
+        return autoScramEnabled;
+    }
+
     public void setAutoScramEnabled(boolean enabled) {
         this.autoScramEnabled = enabled;
         setChanged();
@@ -140,13 +222,19 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
 
     public void toggleSingleRodMode(BlockPos pos, boolean reverse) {
         if (level == null) return;
+
         if (level.getBlockEntity(pos) instanceof ControlRodBlockEntity rod) {
             ControlRodMode current = rod.getMode();
+
             ControlRodMode next = switch (current) {
-                case RETRACTED -> reverse ? ControlRodMode.BORON : ControlRodMode.GRAPHITE;
-                case GRAPHITE -> reverse ? ControlRodMode.RETRACTED : ControlRodMode.BORON;
-                case BORON -> reverse ? ControlRodMode.GRAPHITE : ControlRodMode.RETRACTED;
+                case RETRACTED -> reverse
+                        ? ControlRodMode.BORON : ControlRodMode.GRAPHITE;
+                case GRAPHITE -> reverse
+                        ? ControlRodMode.RETRACTED : ControlRodMode.BORON;
+                case BORON -> reverse
+                        ? ControlRodMode.GRAPHITE : ControlRodMode.RETRACTED;
             };
+
             rod.setColumnMode(next);
             setChanged();
         }
@@ -154,6 +242,7 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
 
     public List<CoreChannelData> scanCoreChannelsForY(int yOffset) {
         List<CoreChannelData> channels = new ArrayList<>();
+
         if (level == null) return channels;
 
         int radius = Config.PANEL_SCAN_RADIUS.get();
@@ -163,7 +252,12 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
                 if (x * x + z * z <= radiusSq) {
-                    BlockPos p = new BlockPos(worldPosition.getX() + x, targetY, worldPosition.getZ() + z);
+                    BlockPos p = new BlockPos(
+                            worldPosition.getX() + x,
+                            targetY,
+                            worldPosition.getZ() + z
+                    );
+
                     BlockEntity be = level.getBlockEntity(p);
                     BlockState state = level.getBlockState(p);
 
@@ -171,24 +265,48 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                         double tempC = u.getTemperature() - 273.15;
                         int water = u.getWaterTank().getFluidAmount();
                         long steam = u.getSteamTank().getStack().getAmount();
-                        channels.add(new CoreChannelData(p, CoreChannelData.Type.FUEL, tempC, water, steam, null));
+
+                        channels.add(new CoreChannelData(
+                                p, CoreChannelData.Type.FUEL,
+                                tempC, water, steam, null
+                        ));
+
                     } else if (be instanceof ControlRodBlockEntity rod) {
-                        channels.add(new CoreChannelData(p, CoreChannelData.Type.CONTROL_ROD, 20.0, 0, 0, rod.getMode()));
-                    } else if (state.is(ModBlocks.PURIFIED_GRAPHITE_BLOCK.get()) || state.is(ModBlocks.GRAPHITE_BLOCK.get())) {
-                        channels.add(new CoreChannelData(p, CoreChannelData.Type.GRAPHITE, 20.0, 0, 0, null));
+                        channels.add(new CoreChannelData(
+                                p, CoreChannelData.Type.CONTROL_ROD,
+                                20.0, 0, 0, rod.getMode()
+                        ));
+
+                    } else if (state.is(ModBlocks.PURIFIED_GRAPHITE_BLOCK.get())
+                            || state.is(ModBlocks.GRAPHITE_BLOCK.get())) {
+
+                        channels.add(new CoreChannelData(
+                                p, CoreChannelData.Type.GRAPHITE,
+                                20.0, 0, 0, null
+                        ));
+
                     } else if (state.is(ModBlocks.BERYLLIUM_BLOCK.get())) {
-                        channels.add(new CoreChannelData(p, CoreChannelData.Type.BERYLLIUM, 20.0, 0, 0, null));
+                        channels.add(new CoreChannelData(
+                                p, CoreChannelData.Type.BERYLLIUM,
+                                20.0, 0, 0, null
+                        ));
+
                     } else if (state.is(ModBlocks.BORON_BLOCK.get())) {
-                        channels.add(new CoreChannelData(p, CoreChannelData.Type.BORON, 20.0, 0, 0, null));
+                        channels.add(new CoreChannelData(
+                                p, CoreChannelData.Type.BORON,
+                                20.0, 0, 0, null
+                        ));
                     }
                 }
             }
         }
+
         return channels;
     }
 
     public void setAllRodsMode(ControlRodMode mode) {
         if (level == null) return;
+
         int radius = Config.PANEL_SCAN_RADIUS.get();
         int radiusSq = radius * radius;
 
@@ -196,14 +314,15 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                 worldPosition.offset(-radius, -radius, -radius),
                 worldPosition.offset(radius, radius, radius)
         ).forEach(p -> {
-            if (worldPosition.distSqr(p) <= radiusSq && level.getBlockEntity(p) instanceof ControlRodBlockEntity rod) {
+            if (worldPosition.distSqr(p) <= radiusSq
+                    && level.getBlockEntity(p) instanceof ControlRodBlockEntity rod) {
                 rod.setMode(mode);
             }
         });
     }
 
     /**
-     * Procedura awaryjna AZ-5 (SCRAM): zrzuca wszystkie pręty na Bor i obniża skuteczność grafitu do 0%.
+     * Procedura awaryjna AZ-5 (SCRAM).
      */
     public void triggerAz5() {
         setAllRodsMode(ControlRodMode.BORON);
@@ -213,48 +332,94 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+
         tag.putInt("SelectedYOffset", selectedYOffset);
         tag.putInt("GraphitePercent", graphitePercent);
         tag.putFloat("ZoomFactor", zoomFactor);
         tag.putInt("AutoScramTemp", autoScramTemp);
         tag.putBoolean("AutoScramEnabled", autoScramEnabled);
 
+        // Zapis produkcji turbiny
+        tag.putDouble("TurbineOutputKfe", turbineOutputKfe);
+
         ListTag list = new ListTag();
+
         for (CoreChannelData ch : clientSyncedChannels) {
             CompoundTag cTag = new CompoundTag();
+
             cTag.putInt("X", ch.pos().getX());
             cTag.putInt("Y", ch.pos().getY());
             cTag.putInt("Z", ch.pos().getZ());
             cTag.putInt("Type", ch.type().ordinal());
             cTag.putDouble("Temp", ch.temperatureC());
-            if (ch.rodMode() != null) cTag.putInt("Rod", ch.rodMode().ordinal());
+
+            if (ch.rodMode() != null) {
+                cTag.putInt("Rod", ch.rodMode().ordinal());
+            }
+
             list.add(cTag);
         }
+
         tag.put("SyncedChannels", list);
     }
 
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        if (tag.contains("SelectedYOffset")) this.selectedYOffset = tag.getInt("SelectedYOffset");
-        if (tag.contains("GraphitePercent")) this.graphitePercent = tag.getInt("GraphitePercent");
-        if (tag.contains("ZoomFactor")) this.zoomFactor = tag.getFloat("ZoomFactor");
-        if (tag.contains("AutoScramTemp")) this.autoScramTemp = tag.getInt("AutoScramTemp");
-        if (tag.contains("AutoScramEnabled")) this.autoScramEnabled = tag.getBoolean("AutoScramEnabled");
+
+        if (tag.contains("SelectedYOffset")) {
+            this.selectedYOffset = tag.getInt("SelectedYOffset");
+        }
+
+        if (tag.contains("GraphitePercent")) {
+            this.graphitePercent = tag.getInt("GraphitePercent");
+        }
+
+        if (tag.contains("ZoomFactor")) {
+            this.zoomFactor = tag.getFloat("ZoomFactor");
+        }
+
+        if (tag.contains("AutoScramTemp")) {
+            this.autoScramTemp = tag.getInt("AutoScramTemp");
+        }
+
+        if (tag.contains("AutoScramEnabled")) {
+            this.autoScramEnabled = tag.getBoolean("AutoScramEnabled");
+        }
+
+        if (tag.contains("TurbineOutputKfe")) {
+            this.turbineOutputKfe = tag.getDouble("TurbineOutputKfe");
+        }
 
         if (tag.contains("SyncedChannels")) {
             ListTag list = tag.getList("SyncedChannels", Tag.TAG_COMPOUND);
+
             this.clientSyncedChannels.clear();
+
             CoreChannelData.Type[] types = CoreChannelData.Type.values();
             ControlRodMode[] modes = ControlRodMode.values();
+
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag cTag = list.getCompound(i);
-                BlockPos p = new BlockPos(cTag.getInt("X"), cTag.getInt("Y"), cTag.getInt("Z"));
+
+                BlockPos p = new BlockPos(
+                        cTag.getInt("X"),
+                        cTag.getInt("Y"),
+                        cTag.getInt("Z")
+                );
+
                 int typeIdx = Math.abs(cTag.getInt("Type")) % types.length;
                 CoreChannelData.Type type = types[typeIdx];
+
                 double temp = cTag.getDouble("Temp");
-                ControlRodMode rodMode = cTag.contains("Rod") ? modes[Math.abs(cTag.getInt("Rod")) % modes.length] : null;
-                this.clientSyncedChannels.add(new CoreChannelData(p, type, temp, 0, 0, rodMode));
+
+                ControlRodMode rodMode = cTag.contains("Rod")
+                        ? modes[Math.abs(cTag.getInt("Rod")) % modes.length]
+                        : null;
+
+                this.clientSyncedChannels.add(new CoreChannelData(
+                        p, type, temp, 0, 0, rodMode
+                ));
             }
         }
     }
@@ -267,39 +432,58 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
                 setAllRodsMode(ControlRodMode.RETRACTED);
                 yield Component.translatable("chat.rbmkmod.control_panel.rods_retracted");
             }
+
             case RODS_GRAPHITE -> {
                 setAllRodsMode(ControlRodMode.GRAPHITE);
                 yield Component.translatable("chat.rbmkmod.control_panel.rods_graphite");
             }
+
             case AZ5 -> {
                 triggerAz5();
                 yield Component.translatable("chat.rbmkmod.control_panel.az5");
             }
+
             case AUTO_AZ5_TOGGLE -> {
                 setAutoScramEnabled(!autoScramEnabled);
                 yield Component.translatable(autoScramEnabled
                         ? "chat.rbmkmod.control_panel.auto_az5_on"
                         : "chat.rbmkmod.control_panel.auto_az5_off");
             }
+
             case AUTO_AZ5_SLIDER -> {
                 setAutoScramTemp(value);
-                yield Component.translatable("chat.rbmkmod.control_panel.auto_az5_threshold", autoScramTemp);
+                yield Component.translatable(
+                        "chat.rbmkmod.control_panel.auto_az5_threshold",
+                        autoScramTemp
+                );
             }
+
             case GRAPHITE_SLIDER -> {
                 setGraphitePercent(value);
-                yield Component.translatable("chat.rbmkmod.control_panel.graphite", graphitePercent);
+                yield Component.translatable(
+                        "chat.rbmkmod.control_panel.graphite",
+                        graphitePercent
+                );
             }
+
             case Y_MINUS -> {
                 setSelectedYOffset(selectedYOffset - 1);
-                yield Component.translatable("chat.rbmkmod.control_panel.y_layer", selectedYOffset);
+                yield Component.translatable(
+                        "chat.rbmkmod.control_panel.y_layer",
+                        selectedYOffset
+                );
             }
+
             case Y_PLUS -> {
                 setSelectedYOffset(selectedYOffset + 1);
-                yield Component.translatable("chat.rbmkmod.control_panel.y_layer", selectedYOffset);
+                yield Component.translatable(
+                        "chat.rbmkmod.control_panel.y_layer",
+                        selectedYOffset
+                );
             }
         };
 
-        player.displayClientMessage(msg, true); // action bar
+        player.displayClientMessage(msg, true);
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
@@ -321,7 +505,11 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
     }
 
     @Override
-    public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+    public @Nullable AbstractContainerMenu createMenu(
+            int containerId,
+            Inventory playerInventory,
+            Player player
+    ) {
         return new ControlPanelMenu(containerId, playerInventory, this.worldPosition, this);
     }
 }

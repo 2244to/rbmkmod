@@ -63,5 +63,10 @@
   "item.rbmkmod.control_rod_mode.graphite": "Moderator (Graphite)",
   "item.rbmkmod.control_rod_mode.boron": "Absorber (Boron)",
   "chat.rbmkmod.control_rod.mode": "Rod mode: %s",
-  "chat.rbmkmod.fuel_channel.status": "§e[Fuel Channel] §cTemp: %s°C §7| §bWater: %d mB §7| §fSteam: %d mB"
+  "chat.rbmkmod.fuel_channel.status": "§e[Fuel Channel] §cTemp: %s°C §7| §bWater: %d mB §7| §fSteam: %d mB",
+  "gui.rbmkmod.control_panel.turbine_output": "Turbine output: %s",
+  "gui.rbmkmod.control_panel.turbine_unlinked": "Turbine: not linked",
+  "chat.rbmkmod.turbine.linked": "Turbine linked to the nearest SKALA panel.",
+  "chat.rbmkmod.turbine.no_panel": "No SKALA panel nearby to link.",
+  "gui.rbmkmod.control_panel.turbine_unlinked_short": "NO LINK"
 }

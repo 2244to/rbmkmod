@@ -63,5 +63,11 @@
   "item.rbmkmod.control_rod_mode.graphite": "Moderator (grafit)",
   "item.rbmkmod.control_rod_mode.boron": "Absorber (bor)",
   "chat.rbmkmod.control_rod.mode": "Tryb pręta: %s",
-  "chat.rbmkmod.fuel_channel.status": "§e[Kanał paliwowy] §cTemp.: %s°C §7| §bWoda: %d mB §7| §fPara: %d mB"
+  "chat.rbmkmod.fuel_channel.status": "§e[Kanał paliwowy] §cTemp.: %s°C §7| §bWoda: %d mB §7| §fPara: %d mB",
+  "gui.rbmkmod.control_panel.turbine_output": "Moc turbiny: %s",
+  "gui.rbmkmod.control_panel.turbine_unlinked": "Turbina: niepołączona",
+  "chat.rbmkmod.turbine.linked": "Turbina połączona z najbliższym panelem SKALA.",
+  "chat.rbmkmod.turbine.no_panel": "Brak pobliskiego panelu SKALA do połączenia.",
+  "gui.rbmkmod.control_panel.turbine_unlinked_short": "BRAK ŁĄCZA",
+  "chat.rbmkmod.control_panel.turbine_linked": "Powiązano z turbiną: %s, %s, %s"
 }

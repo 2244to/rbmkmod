@@ -121,8 +121,10 @@ repositories {
 dependencies {
     // Mekanism
     implementation "maven.modrinth:mekanism:10.7.19.85"
-}
 
+    // Mekanism Generators
+    implementation "maven.modrinth:mekanism-generators:10.7.19.85"
+}
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
