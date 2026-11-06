@@ -38,7 +38,8 @@ import java.util.List;
 public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanismChemicalHandler {
     public static final double ROOM_TEMPERATURE = 295.15;
     public static final double EXPLOSION_THRESHOLD = 2773.15;
-
+    public static final double MAX_HEATING_RATE_PER_SECOND = 200.0;
+    private static final double MAX_HEATING_PER_TICK = MAX_HEATING_RATE_PER_SECOND / 20.0;
     private double temperature = ROOM_TEMPERATURE;
     private double lastSyncedTemp = ROOM_TEMPERATURE;
 
@@ -93,7 +94,11 @@ public class EnrichedUraniumBlockEntity extends BlockEntity implements IMekanism
         // 6. Wypchnij nowo wyprodukowaną parę
         blockEntity.pushSteam(serverLevel, pos);
 
-        // Rzadkie samorzutne rozszczepienie (spontaneous fission)
+        // Ograniczenie maksymalnego wzrostu temperatury do 200 K/s
+        blockEntity.temperature = Math.min(
+                blockEntity.temperature,
+                previousTemperature + MAX_HEATING_PER_TICK
+        );
         if (serverLevel.random.nextFloat() < 0.002f) {
             blockEntity.emitNeutron(serverLevel);
         }
