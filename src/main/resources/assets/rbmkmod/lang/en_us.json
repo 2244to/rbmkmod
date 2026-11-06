@@ -1,38 +1,29 @@
 {
   "creativetab.rbmkmod.rbmk_tab": "RBMK Reactor",
-
   "item.rbmkmod.graphite": "Graphite",
   "item.rbmkmod.uranium_ingot": "Uranium Ingot",
   "item.rbmkmod.enriched_uranium": "Enriched Uranium",
   "item.rbmkmod.boron_ingot": "Boron Ingot",
   "item.rbmkmod.beryllium_ingot": "Beryllium Ingot",
-
   "item.rbmkmod.raw_uranium": "Raw Uranium",
   "item.rbmkmod.raw_boron": "Raw Boron",
   "item.rbmkmod.raw_beryllium": "Raw Beryllium",
-
   "item.rbmkmod.neutron_gun": "Neutron Gun",
-
   "block.rbmkmod.graphite_block": "Graphite Block",
   "block.rbmkmod.purified_graphite_block": "Purified Graphite Block",
-
   "block.rbmkmod.uranium_ore": "Uranium Ore",
   "block.rbmkmod.deepslate_uranium_ore": "Deepslate Uranium Ore",
   "block.rbmkmod.uranium_block": "Block of Uranium",
   "block.rbmkmod.enriched_uranium_block": "Block of Enriched Uranium",
-
   "block.rbmkmod.boron_ore": "Boron Ore",
   "block.rbmkmod.deepslate_boron_ore": "Deepslate Boron Ore",
   "block.rbmkmod.boron_block": "Block of Boron",
-
   "block.rbmkmod.beryllium_ore": "Beryllium Ore",
   "block.rbmkmod.deepslate_beryllium_ore": "Deepslate Beryllium Ore",
   "block.rbmkmod.beryllium_block": "Block of Beryllium",
-
   "block.rbmkmod.control_rod": "Control Rod",
   "block.rbmkmod.control_panel": "SKALA Control Panel",
   "block.rbmkmod.control_panel_display_name": "SKALA SYSTEM - RBMK MONITOR",
-
   "gui.rbmkmod.control_panel.header": "SKALA SYSTEM - RBMK MONITOR",
   "gui.rbmkmod.control_panel.graphite_slider": "Graphite: %d%%",
   "gui.rbmkmod.control_panel.zoom_slider": "Zoom: %sx",
@@ -49,7 +40,6 @@
   "gui.rbmkmod.control_panel.auto_scram_off": "Auto AZ-5: §cOFF",
   "gui.rbmkmod.control_panel.max_temp": "Max T: %s°C",
   "gui.rbmkmod.control_panel.fuel_count": "Fuel: %d",
-
   "tooltip.rbmkmod.channel": "§eChannel [%d, Y:%d, %d]",
   "tooltip.rbmkmod.type.fuel": "§7Type: §aFuel Assembly (Uranium)",
   "tooltip.rbmkmod.temp": "§7Temp: %s°C",
@@ -61,7 +51,6 @@
   "tooltip.rbmkmod.type.graphite": "§7Type: §8Graphite Moderator",
   "tooltip.rbmkmod.type.beryllium": "§7Type: §9Beryllium Reflector",
   "tooltip.rbmkmod.type.boron": "§7Type: §5Solid Boron Absorber",
-
   "chat.rbmkmod.control_panel.rods_retracted": "Rods: Retracted",
   "chat.rbmkmod.control_panel.rods_graphite": "Rods: GRAPHITE",
   "chat.rbmkmod.control_panel.az5": "AZ-5!",
@@ -69,5 +58,10 @@
   "chat.rbmkmod.control_panel.auto_az5_off": "Auto AZ-5: OFF",
   "chat.rbmkmod.control_panel.auto_az5_threshold": "Auto AZ-5 Threshold: %d °C",
   "chat.rbmkmod.control_panel.graphite": "Graphite: %d%%",
-  "chat.rbmkmod.control_panel.y_layer": "Y Layer: %d"
+  "chat.rbmkmod.control_panel.y_layer": "Y Layer: %d",
+  "item.rbmkmod.control_rod_mode.retracted": "Withdrawn (unmoderated)",
+  "item.rbmkmod.control_rod_mode.graphite": "Moderator (Graphite)",
+  "item.rbmkmod.control_rod_mode.boron": "Absorber (Boron)",
+  "chat.rbmkmod.control_rod.mode": "Rod mode: %s",
+  "chat.rbmkmod.fuel_channel.status": "§e[Fuel Channel] §cTemp: %s°C §7| §bWater: %d mB §7| §fSteam: %d mB"
 }

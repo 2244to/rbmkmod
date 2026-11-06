@@ -43,8 +43,8 @@ public class EnrichedUraniumBlock extends BaseEntityBlock {
             double tempC = reactor.getTemperature() - 273.15;
             int water = reactor.getWaterTank().getFluidAmount();
             long steam = reactor.getSteamTank().getStack().getAmount();
-            player.displayClientMessage(Component.literal(
-                    String.format("§e[Kanał Paliwowy] §cTemp: %.1f°C §7| §bWoda: %d mB §7| §fPara: %d mB", tempC, water, steam)
+            player.displayClientMessage(Component.translatable(
+                    "chat.rbmkmod.fuel_channel.status", String.format("%.1f", tempC), water, steam
             ), true);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

@@ -39,7 +39,7 @@ public class ControlRodBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ControlRodBlockEntity rod) {
             rod.cycleMode();
-            player.sendSystemMessage(Component.literal("Tryb pręta: " + rod.getMode().getDisplayName()));
+            player.sendSystemMessage(Component.translatable("chat.rbmkmod.control_rod.mode", rod.getMode().getDisplayName()));
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
     }

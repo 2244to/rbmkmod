@@ -1,9 +1,9 @@
 package com.rbmkmod.rbmkmod;
 
 public enum ControlRodMode {
-    RETRACTED("Wysunięty (Przelotny)"),
-    GRAPHITE("Moderator (Grafit)"),
-    BORON("Absorber (Bór)");
+    RETRACTED("item.rbmkmod.control_rod_mode.retracted"),
+    GRAPHITE("item.rbmkmod.control_rod_mode.graphite"),
+    BORON("item.rbmkmod.control_rod_mode.boron");
 
     private final String displayName;
 
@@ -11,8 +11,8 @@ public enum ControlRodMode {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public net.minecraft.network.chat.Component getDisplayName() {
+        return net.minecraft.network.chat.Component.translatable(displayName);
     }
 
     public ControlRodMode next() {
