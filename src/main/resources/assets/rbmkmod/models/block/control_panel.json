@@ -200,34 +200,7 @@
         "down": {"uv": [3, 3, 8, 4], "texture": "#10"}
       }
     },
-    {
-      "name": "wskaznik_suwaka_auto_az-5_temp",
-      "from": [14.5, 6.75, 7.5],
-      "to": [15, 8.25, 8.5],
-      "rotation": {"angle": 0, "axis": "y", "origin": [12.5, 7.75, 8.5]},
-      "faces": {
-        "north": {"uv": [3, 0, 8, 1], "texture": "#10"},
-        "east": {"uv": [6, 11, 7, 12], "texture": "#10"},
-        "south": {"uv": [3, 1, 8, 2], "texture": "#10"},
-        "west": {"uv": [7, 11, 8, 12], "texture": "#10"},
-        "up": {"uv": [3, 2, 8, 3], "texture": "#10"},
-        "down": {"uv": [3, 3, 8, 4], "texture": "#10"}
-      }
-    },
-    {
-      "name": "wskaznik_suwaka_proc_grafitu",
-      "from": [14.5, 8.75, 7.5],
-      "to": [15, 10.25, 8.5],
-      "rotation": {"angle": 0, "axis": "y", "origin": [12.5, 9.75, 8.5]},
-      "faces": {
-        "north": {"uv": [3, 0, 8, 1], "texture": "#10"},
-        "east": {"uv": [6, 11, 7, 12], "texture": "#10"},
-        "south": {"uv": [3, 1, 8, 2], "texture": "#10"},
-        "west": {"uv": [7, 11, 8, 12], "texture": "#10"},
-        "up": {"uv": [3, 2, 8, 3], "texture": "#10"},
-        "down": {"uv": [3, 3, 8, 4], "texture": "#10"}
-      }
-    },
+
     {
       "name": "tlo_suwaka_proc_grafitu",
       "from": [10.5, 9, 7.8],

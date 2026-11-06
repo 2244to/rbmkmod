@@ -21,6 +21,11 @@ import java.util.List;
 
 public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<ControlPanelBlockEntity> {
 
+    // Tor suwaków w pikselach modelu (tło: x 10.5 .. 15.5), szerokość wskaźnika 0.5 px
+    private static final float TRACK_MIN_X = 10.5f;
+    private static final float TRACK_MAX_X = 15.5f;
+    private static final float POINTER_W = 0.5f;
+
     public ControlPanelBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
 
@@ -60,6 +65,20 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
                 1.0f, 1.0f, 1.0f,
                 packedLight, packedOverlay
         );
+
+        // 3b. RUCHOME WSKAŹNIKI SUWAKÓW (w przestrzeni modelu, 1 px = 1/16)
+        {
+            VertexConsumer ptr = bufferSource.getBuffer(RenderType.debugQuads());
+            Matrix4f m = poseStack.last().pose();
+
+            // Suwak progu Auto AZ-5: 300..2400 °C
+            float tempFrac = (blockEntity.getAutoScramTemp() - 300) / 2100.0f;
+            drawPointer(ptr, m, tempFrac, 6.75f, 8.25f, 0xFFFF9900);
+
+            // Suwak procentu grafitu: 0..100 %
+            float grFrac = blockEntity.getGraphitePercent() / 100.0f;
+            drawPointer(ptr, m, grFrac, 8.75f, 10.25f, 0xFF00E5FF);
+        }
 
         // 4. RENDEROWANIE DIOD NA EKRANIE
         List<CoreChannelData> channels = blockEntity.getClientSyncedChannels();
@@ -130,6 +149,39 @@ public class ControlPanelBlockEntityRenderer implements BlockEntityRenderer<Cont
         }
 
         poseStack.popPose();
+    }
+
+    /** Rysuje prostopadłościan wskaźnika na torze suwaka; frac = 0..1. Z: 7.5..8.5 px, jak w starym modelu. */
+    private void drawPointer(VertexConsumer vc, Matrix4f m, float frac, float y0Px, float y1Px, int argb) {
+        frac = Math.max(0f, Math.min(1f, frac));
+        float cx = TRACK_MIN_X + frac * (TRACK_MAX_X - TRACK_MIN_X);
+        cx = Math.max(TRACK_MIN_X + POINTER_W / 2f, Math.min(TRACK_MAX_X - POINTER_W / 2f, cx));
+
+        float x0 = (cx - POINTER_W / 2f) / 16f, x1 = (cx + POINTER_W / 2f) / 16f;
+        float y0 = y0Px / 16f, y1 = y1Px / 16f;
+        float z0 = 7.5f / 16f, z1 = 8.5f / 16f;
+
+        int a = (argb >> 24) & 0xFF, r = (argb >> 16) & 0xFF, g = (argb >> 8) & 0xFF, b = argb & 0xFF;
+        int rs = (int) (r * 0.7f), gs = (int) (g * 0.7f), bs = (int) (b * 0.7f); // ciemniejsze boki
+
+        // przód (północ, z0)
+        quad(vc, m, x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0, r, g, b, a);
+        // góra / dół
+        quad(vc, m, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1, rs, gs, bs, a);
+        quad(vc, m, x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1, rs, gs, bs, a);
+        // boki
+        quad(vc, m, x0, y0, z0, x0, y1, z0, x0, y1, z1, x0, y0, z1, rs, gs, bs, a);
+        quad(vc, m, x1, y0, z0, x1, y1, z0, x1, y1, z1, x1, y0, z1, rs, gs, bs, a);
+    }
+
+    private void quad(VertexConsumer vc, Matrix4f m,
+                      float x1, float y1, float z1, float x2, float y2, float z2,
+                      float x3, float y3, float z3, float x4, float y4, float z4,
+                      int r, int g, int b, int a) {
+        vc.addVertex(m, x1, y1, z1).setColor(r, g, b, a);
+        vc.addVertex(m, x2, y2, z2).setColor(r, g, b, a);
+        vc.addVertex(m, x3, y3, z3).setColor(r, g, b, a);
+        vc.addVertex(m, x4, y4, z4).setColor(r, g, b, a);
     }
 
     private void drawQuad(VertexConsumer builder, Matrix4f matrix, float x, float y, float z, float w, float h, int r, int g, int b, int a) {

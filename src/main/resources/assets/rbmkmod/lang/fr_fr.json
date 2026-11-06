@@ -59,5 +59,14 @@
   "tooltip.rbmkmod.click_instruction": "§8[Clic G/D pour basculer la colonne]",
   "tooltip.rbmkmod.type.graphite": "§7Type : §8Modérateur en graphite",
   "tooltip.rbmkmod.type.beryllium": "§7Type : §9Réflecteur en béryllium",
-  "tooltip.rbmkmod.type.boron": "§7Type : §5Absorbeur solide en bore"
+  "tooltip.rbmkmod.type.boron": "§7Type : §5Absorbeur solide en bore",
+
+  "chat.rbmkmod.control_panel.rods_retracted": "Barres : Rétractées",
+  "chat.rbmkmod.control_panel.rods_graphite": "Barres : GRAPHITE",
+  "chat.rbmkmod.control_panel.az5": "AZ-5 !",
+  "chat.rbmkmod.control_panel.auto_az5_on": "Auto AZ-5 : ON",
+  "chat.rbmkmod.control_panel.auto_az5_off": "Auto AZ-5 : OFF",
+  "chat.rbmkmod.control_panel.auto_az5_threshold": "Seuil Auto AZ-5 : %d °C",
+  "chat.rbmkmod.control_panel.graphite": "Graphite : %d%%",
+  "chat.rbmkmod.control_panel.y_layer": "Couche Y : %d"
 }

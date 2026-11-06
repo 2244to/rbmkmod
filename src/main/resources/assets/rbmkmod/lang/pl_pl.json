@@ -59,5 +59,14 @@
   "tooltip.rbmkmod.click_instruction": "§8[Kliknij LPM/PPM, aby przełączyć kolumnę]",
   "tooltip.rbmkmod.type.graphite": "§7Typ: §8Moderator Grafitowy",
   "tooltip.rbmkmod.type.beryllium": "§7Typ: §9Reflektor Berylowy",
-  "tooltip.rbmkmod.type.boron": "§7Typ: §5Stały Absorber Borowy"
+  "tooltip.rbmkmod.type.boron": "§7Typ: §5Stały Absorber Borowy",
+
+  "chat.rbmkmod.control_panel.rods_retracted": "Pręty: Wysunięte",
+  "chat.rbmkmod.control_panel.rods_graphite": "Pręty: GRAFIT",
+  "chat.rbmkmod.control_panel.az5": "AZ-5!",
+  "chat.rbmkmod.control_panel.auto_az5_on": "Auto AZ-5: WŁ.",
+  "chat.rbmkmod.control_panel.auto_az5_off": "Auto AZ-5: WYŁ.",
+  "chat.rbmkmod.control_panel.auto_az5_threshold": "Próg Auto AZ-5: %d °C",
+  "chat.rbmkmod.control_panel.graphite": "Grafit: %d%%",
+  "chat.rbmkmod.control_panel.y_layer": "Warstwa Y: %d"
 }

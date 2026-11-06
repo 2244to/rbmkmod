@@ -59,5 +59,14 @@
   "tooltip.rbmkmod.click_instruction": "§8[Links-/Rechtsklick zum Umschalten]",
   "tooltip.rbmkmod.type.graphite": "§7Typ: §8Graphit-Moderator",
   "tooltip.rbmkmod.type.beryllium": "§7Typ: §9Beryllium-Reflektor",
-  "tooltip.rbmkmod.type.boron": "§7Typ: §5Fester Bor-Absorber"
+  "tooltip.rbmkmod.type.boron": "§7Typ: §5Fester Bor-Absorber",
+
+  "chat.rbmkmod.control_panel.rods_retracted": "Stäbe: Eingefahren",
+  "chat.rbmkmod.control_panel.rods_graphite": "Stäbe: GRAPHIT",
+  "chat.rbmkmod.control_panel.az5": "AZ-5!",
+  "chat.rbmkmod.control_panel.auto_az5_on": "Auto AZ-5: AN",
+  "chat.rbmkmod.control_panel.auto_az5_off": "Auto AZ-5: AUS",
+  "chat.rbmkmod.control_panel.auto_az5_threshold": "Auto-AZ-5-Schwelle: %d °C",
+  "chat.rbmkmod.control_panel.graphite": "Graphit: %d%%",
+  "chat.rbmkmod.control_panel.y_layer": "Y-Ebene: %d"
 }

@@ -60,5 +60,14 @@
   "tooltip.rbmkmod.click_instruction": "§8[Left/Right click to toggle column]",
   "tooltip.rbmkmod.type.graphite": "§7Type: §8Graphite Moderator",
   "tooltip.rbmkmod.type.beryllium": "§7Type: §9Beryllium Reflector",
-  "tooltip.rbmkmod.type.boron": "§7Type: §5Solid Boron Absorber"
+  "tooltip.rbmkmod.type.boron": "§7Type: §5Solid Boron Absorber",
+
+  "chat.rbmkmod.control_panel.rods_retracted": "Rods: Retracted",
+  "chat.rbmkmod.control_panel.rods_graphite": "Rods: GRAPHITE",
+  "chat.rbmkmod.control_panel.az5": "AZ-5!",
+  "chat.rbmkmod.control_panel.auto_az5_on": "Auto AZ-5: ON",
+  "chat.rbmkmod.control_panel.auto_az5_off": "Auto AZ-5: OFF",
+  "chat.rbmkmod.control_panel.auto_az5_threshold": "Auto AZ-5 Threshold: %d °C",
+  "chat.rbmkmod.control_panel.graphite": "Graphite: %d%%",
+  "chat.rbmkmod.control_panel.y_layer": "Y Layer: %d"
 }

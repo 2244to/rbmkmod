@@ -259,6 +259,50 @@ public class ControlPanelBlockEntity extends BlockEntity implements MenuProvider
         }
     }
 
+    public void handleButton(PanelButton button, int value, Player player) {
+        if (level == null || level.isClientSide()) return;
+
+        Component msg = switch (button) {
+            case RODS_BORON -> {
+                setAllRodsMode(ControlRodMode.RETRACTED);
+                yield Component.translatable("chat.rbmkmod.control_panel.rods_retracted");
+            }
+            case RODS_GRAPHITE -> {
+                setAllRodsMode(ControlRodMode.GRAPHITE);
+                yield Component.translatable("chat.rbmkmod.control_panel.rods_graphite");
+            }
+            case AZ5 -> {
+                triggerAz5();
+                yield Component.translatable("chat.rbmkmod.control_panel.az5");
+            }
+            case AUTO_AZ5_TOGGLE -> {
+                setAutoScramEnabled(!autoScramEnabled);
+                yield Component.translatable(autoScramEnabled
+                        ? "chat.rbmkmod.control_panel.auto_az5_on"
+                        : "chat.rbmkmod.control_panel.auto_az5_off");
+            }
+            case AUTO_AZ5_SLIDER -> {
+                setAutoScramTemp(value);
+                yield Component.translatable("chat.rbmkmod.control_panel.auto_az5_threshold", autoScramTemp);
+            }
+            case GRAPHITE_SLIDER -> {
+                setGraphitePercent(value);
+                yield Component.translatable("chat.rbmkmod.control_panel.graphite", graphitePercent);
+            }
+            case Y_MINUS -> {
+                setSelectedYOffset(selectedYOffset - 1);
+                yield Component.translatable("chat.rbmkmod.control_panel.y_layer", selectedYOffset);
+            }
+            case Y_PLUS -> {
+                setSelectedYOffset(selectedYOffset + 1);
+                yield Component.translatable("chat.rbmkmod.control_panel.y_layer", selectedYOffset);
+            }
+        };
+
+        player.displayClientMessage(msg, true); // action bar
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
